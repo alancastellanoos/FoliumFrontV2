@@ -444,6 +444,131 @@
                 height: 24px;
             }
         }
+        /* Responsive Mejorado */
+@media (max-width: 768px) {
+
+    body {
+        background: #ffffff;
+    }
+
+    /* HEADER */
+    .header {
+        padding: 15px 20px;
+    }
+
+    .header-content {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 15px;
+    }
+
+    .logo {
+        font-size: 22px;
+        gap: 6px;
+    }
+
+    .logo svg {
+        width: 22px;
+        height: 22px;
+    }
+
+    .header-actions {
+        width: 100%;
+        display: flex;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 10px;
+    }
+
+    .header-btn {
+        flex: 1;
+        text-align: center;
+        padding: 10px;
+        font-size: 13px;
+    }
+
+    /* MAIN */
+    .main-content {
+        margin-top: 140px;
+        padding: 20px;
+    }
+
+    .page-title {
+        font-size: 24px;
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .page-subtitle {
+        font-size: 14px;
+    }
+
+    /* FORM */
+    .form-container {
+        padding: 24px 18px;
+        border-radius: 10px;
+    }
+
+    .section-title {
+        font-size: 18px;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+    }
+
+    .form-row {
+        grid-template-columns: 1fr;
+        gap: 18px;
+    }
+
+    .form-group {
+        margin-bottom: 20px;
+    }
+
+    .form-label {
+        font-size: 14px;
+    }
+
+    .form-input,
+    .form-select,
+    .form-textarea {
+        padding: 12px;
+        font-size: 14px;
+    }
+
+    /* FILE UPLOAD */
+    .file-upload-label {
+        padding: 34px 16px;
+    }
+
+    .file-upload-label i {
+        font-size: 42px;
+    }
+
+    .file-upload-text {
+        font-size: 14px;
+    }
+
+    .file-upload-hint {
+        font-size: 12px;
+    }
+
+    .preview-image {
+        max-height: 260px;
+    }
+
+    /* BUTTONS */
+    .form-actions {
+        flex-direction: column;
+        gap: 12px;
+        padding-top: 24px;
+    }
+
+    .btn {
+        padding: 14px;
+        font-size: 14px;
+    }
+}
+
     </style>
 </head>
 <body>

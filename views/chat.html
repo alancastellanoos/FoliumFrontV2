@@ -488,6 +488,105 @@
                 display: none;
             }
         }
+        /* ======== RESPONSIVE PARA TELÉFONOS ======== */
+@media (max-width: 768px) {
+
+    body {
+        overflow-y: auto;
+        height: auto;
+    }
+
+    /* Contenedor principal */
+    .container,
+    .main-container,
+    .layout,
+    .wrapper {
+        flex-direction: column !important;
+        height: auto !important;
+    }
+
+    /* Columnas (si tienes left/right) */
+    .left-column,
+    .right-column,
+    .sidebar,
+    .content {
+        width: 100% !important;
+        max-width: 100% !important;
+        padding: 20px !important;
+        height: auto !important;
+    }
+
+    /* Textos */
+    h1 {
+        font-size: 26px !important;
+    }
+
+    h2, h3 {
+        font-size: 20px !important;
+    }
+
+    p, span {
+        font-size: 14px !important;
+    }
+
+    /* Formularios */
+    input, select, textarea {
+        width: 100% !important;
+        font-size: 14px !important;
+        padding: 12px !important;
+    }
+
+    /* Botones */
+    button, .btn, .btn-primary {
+        width: 100% !important;
+        padding: 14px !important;
+        font-size: 15px !important;
+        margin-top: 10px;
+    }
+
+    /* Tarjetas para que no se rompan */
+    .card, .box, .panel {
+        width: 100% !important;
+        padding: 16px !important;
+        margin-bottom: 20px !important;
+    }
+
+    /* Imagen de perfil o contenedores centrados */
+    .profile,
+    .header,
+    .top,
+    .welcome {
+        text-align: center !important;
+    }
+
+    /* Íconos */
+    .icon {
+        width: 30px !important;
+        height: 30px !important;
+    }
+
+    /* Grids */
+    .grid {
+        grid-template-columns: 1fr !important;
+        gap: 20px !important;
+    }
+}
+
+/* ======== RESPONSIVE EXTRA PARA TELÉFONOS PEQUEÑOS ======== */
+@media (max-width: 420px) {
+    h1 {
+        font-size: 22px !important;
+    }
+
+    button {
+        font-size: 14px !important;
+    }
+
+    .card {
+        padding: 12px !important;
+    }
+}
+
     </style>
 </head>
 <body>
