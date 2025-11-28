@@ -1,0 +1,895 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folium - Poner en Adopción</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            font-weight: 400;
+        }
+
+        /* Header */
+        .header {
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 20px 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        color: #1a1a1a;
+        letter-spacing: 0.5px;
+    }
+
+    .logo i {
+        color: #2d6a4f;
+        font-size: 26px;
+    }
+
+    .search-container {
+        flex: 1;
+        max-width: 480px;
+        position: relative;
+    }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-btn {
+            padding: 10px 20px;
+            border: 1px solid #e0e0e0;
+            background: #ffffff;
+            color: #1a1a1a;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .header-btn:hover {
+            background: #f8f8f8;
+            border-color: #c0c0c0;
+        }
+
+        .header-btn.logout {
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .header-btn.logout:hover {
+            background: #2d2d2d;
+            border-color: #2d2d2d;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 100px;
+            padding: 30px 40px 80px;
+            max-width: 900px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 600;
+            color: #0a0a0a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        .page-title i {
+            color: #2d6a4f;
+        }
+
+        .page-subtitle {
+            font-size: 16px;
+            color: #666666;
+            font-weight: 400;
+        }
+
+        /* Form Container */
+        .form-container {
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            padding: 44px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .form-section {
+            margin-bottom: 44px;
+        }
+
+        .form-section:last-of-type {
+            margin-bottom: 0;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0a0a0a;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #2d6a4f;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .section-title i {
+            color: #2d6a4f;
+            font-size: 20px;
+        }
+
+        .form-group {
+            margin-bottom: 28px;
+        }
+
+        .form-label {
+            display: block;
+            font-size: 14px;
+            font-weight: 500;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+        }
+
+        .form-label .required {
+            color: #c53030;
+            margin-left: 4px;
+        }
+
+        .form-input,
+        .form-select,
+        .form-textarea {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            transition: all 0.3s ease;
+            background: #fafafa;
+            font-weight: 400;
+        }
+
+        .form-input:focus,
+        .form-select:focus,
+        .form-textarea:focus {
+            outline: none;
+            border-color: #2d6a4f;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+        }
+
+        .form-textarea {
+            resize: vertical;
+            min-height: 140px;
+            line-height: 1.6;
+        }
+
+        .form-file {
+            display: none;
+        }
+
+        .file-upload-wrapper {
+            position: relative;
+        }
+
+        .file-upload-label {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 48px 24px;
+            border: 2px dashed #d0d0d0;
+            border-radius: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: #fafafa;
+        }
+
+        .file-upload-label:hover {
+            border-color: #2d6a4f;
+            background: #f5f9f7;
+        }
+
+        .file-upload-label i {
+            font-size: 52px;
+            color: #2d6a4f;
+            margin-bottom: 18px;
+        }
+
+        .file-upload-text {
+            font-size: 16px;
+            color: #4a4a4a;
+            margin-bottom: 6px;
+            font-weight: 500;
+        }
+
+        .file-upload-hint {
+            font-size: 13px;
+            color: #999999;
+            font-weight: 400;
+        }
+
+        .file-preview {
+            display: none;
+            margin-top: 24px;
+            position: relative;
+        }
+
+        .file-preview.active {
+            display: block;
+        }
+
+        .preview-image {
+            width: 100%;
+            max-height: 340px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .remove-image {
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: rgba(197, 48, 48, 0.9);
+            color: white;
+            border: none;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 16px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .remove-image:hover {
+            background: #c53030;
+            transform: scale(1.08);
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 24px;
+        }
+
+        .form-actions {
+            display: flex;
+            gap: 16px;
+            margin-top: 44px;
+            padding-top: 32px;
+            border-top: 1px solid #e8e8e8;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 16px 32px;
+            border: none;
+            border-radius: 10px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .btn-primary {
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+
+        .btn-primary:hover:not(:disabled) {
+            background: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 18px rgba(10, 10, 10, 0.2);
+        }
+
+        .btn-primary:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        .btn-secondary {
+            background: #f5f5f5;
+            color: #4a4a4a;
+            border: 1px solid #e0e0e0;
+        }
+
+        .btn-secondary:hover {
+            background: #e8e8e8;
+            transform: translateY(-1px);
+        }
+
+        .error-message {
+            display: none;
+            background: #fff5f5;
+            border: 1px solid #feb2b2;
+            color: #c53030;
+            padding: 16px 20px;
+            border-radius: 10px;
+            margin-bottom: 28px;
+            font-size: 14px;
+            border-left: 4px solid #c53030;
+            font-weight: 500;
+        }
+
+        .error-message.active {
+            display: block;
+        }
+
+        .error-message i {
+            margin-right: 10px;
+        }
+
+        /* Loading Spinner */
+        .spinner {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid rgba(255,255,255,0.3);
+            border-radius: 50%;
+            border-top-color: white;
+            animation: spin 0.8s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-wrap: wrap;
+            }
+
+            .header-actions {
+                flex-wrap: wrap;
+            }
+
+            .main-content {
+                padding: 30px 20px 80px;
+            }
+
+            .form-container {
+                padding: 32px 24px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+
+            .page-title {
+                font-size: 28px;
+            }
+
+            .form-actions {
+                flex-direction: column;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .logo svg {
+                width: 24px;
+                height: 24px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="gallery.html" class="logo">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 2C16 2 8 10 8 18C8 22.4183 11.5817 26 16 26C20.4183 26 24 22.4183 24 18C24 10 16 2 16 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 12V26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 16C12 16 14 18 16 18C18 18 20 16 20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span>Folium</span>
+</a>
+
+            <div class="header-actions">
+                <a href="gallery.html" class="header-btn">
+                    <i class="fas fa-th-large"></i>
+                    <span>Galería</span>
+                </a>
+                <a href="profile.html" class="header-btn">
+                    <i class="fas fa-user"></i>
+                    <span>Mi Perfil</span>
+                </a>
+                <a href="requests.html" class="header-btn">
+                    <i class="fas fa-handshake"></i>
+                    <span>Solicitudes</span>
+                </a>
+                <button class="header-btn logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Salir</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-hand-holding-heart"></i>
+                Poner Planta en Adopción
+            </h1>
+            <p class="page-subtitle">Comparte tu planta con la comunidad y ayuda a encontrarle un nuevo hogar</p>
+        </div>
+
+        <div class="form-container">
+            <div class="error-message" id="errorMessage">
+                <i class="fas fa-exclamation-triangle"></i>
+                <span id="errorText"></span>
+            </div>
+
+            <form id="plantForm" enctype="multipart/form-data">
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Información Básica
+                    </h2>
+
+                    <div class="form-group">
+                        <label class="form-label" for="name">
+                            Nombre Común de la Planta
+                            <span class="required">*</span>
+                        </label>
+                        <input 
+                            type="text" 
+                            id="name" 
+                            name="name" 
+                            class="form-input" 
+                            placeholder="Ej: Monstera Deliciosa"
+                            required
+                        >
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="type">
+                                Tipo / Categoría
+                                <span class="required">*</span>
+                            </label>
+                            <select id="type" name="type" class="form-select" required>
+                                <option value="">Selecciona una categoría</option>
+                                <option value="1">Interior</option> 
+                                <option value="2">Exterior</option>
+                                <option value="3">Suculentas</option>
+                                <option value="4">Cactus</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="location">
+                                Ubicación
+                                <span class="required">*</span>
+                            </label>
+                            <input 
+                                type="text" 
+                                id="location" 
+                                name="location" 
+                                class="form-input" 
+                                placeholder="Ciudad o zona"
+                                required
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="description">
+                            Descripción
+                            <span class="required">*</span>
+                        </label>
+                        <textarea 
+                            id="description" 
+                            name="description" 
+                            class="form-textarea" 
+                            placeholder="Describe tu planta: edad, tamaño, estado de salud, por qué la estás dando en adopción..."
+                            required
+                        ></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label">
+                            Foto de la Planta
+                            <span class="required">*</span>
+                        </label>
+                        <div class="file-upload-wrapper">
+                            <input 
+                                type="file" 
+                                id="plantImage" 
+                                name="plantImage" 
+                                class="form-file" 
+                                accept="image/*"
+                                required
+                            >
+                            <label for="plantImage" class="file-upload-label" id="fileLabel">
+                                <i class="fas fa-cloud-upload-alt"></i>
+                                <div class="file-upload-text">Haz clic para subir una foto</div>
+                                <div class="file-upload-hint">PNG, JPG, JPEG (máx. 5MB)</div>
+                            </label>
+                            <div class="file-preview" id="filePreview">
+                                <img id="previewImage" class="preview-image" src="" alt="Vista previa">
+                                <button type="button" class="remove-image" id="removeImage">
+                                    <i class="fas fa-times"></i>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-section">
+                    <h2 class="section-title">
+                        <i class="fas fa-leaf"></i>
+                        Detalles de Cuidado
+                    </h2>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="luz">
+                                Exposición a la Luz
+                                <span class="required">*</span>
+                            </label>
+                            <select id="luz" name="luz" class="form-select" required>
+                                <option value="">Selecciona el tipo de luz</option>
+                                <option value="Sol Directo">Sol Directo</option>
+                                <option value="Indirecta Brillante">Indirecta Brillante</option>
+                                <option value="Sombra Parcial">Sombra Parcial</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="riego">
+                                Frecuencia de Riego
+                                <span class="required">*</span>
+                            </label>
+                            <select id="riego" name="riego" class="form-select" required>
+                                <option value="">Selecciona la frecuencia</option>
+                                <option value="Diario">Diario</option>
+                                <option value="Semanal">Semanal</option>
+                                <option value="Cada 15 días">Cada 15 días</option>
+                                <option value="Mensual">Mensual</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label" for="humedad">
+                                Nivel de Humedad
+                            </label>
+                            <select id="humedad" name="humedad" class="form-select">
+                                <option value="">Selecciona el nivel (opcional)</option>
+                                <option value="Alta">Alta</option>
+                                <option value="Media">Media</option>
+                                <option value="Baja">Baja</option>
+                            </select>
+                        </div>
+
+                        <div class="form-group">
+                            <label class="form-label" for="temp">
+                                Temperatura (°C)
+                            </label>
+                            <input 
+                                type="text" 
+                                id="temp" 
+                                name="temp" 
+                                class="form-input" 
+                                placeholder="Ej: 18-30"
+                            >
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="form-label" for="fertilizer">
+                            Fertilizante (Tipo y Frecuencia)
+                        </label>
+                        <input 
+                            type="text" 
+                            id="fertilizer" 
+                            name="fertilizer" 
+                            class="form-input" 
+                            placeholder="Ej: Abono líquido cada mes"
+                        >
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary" id="cancelBtn">
+                        <i class="fas fa-times"></i>
+                        Cancelar
+                    </button>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">
+                        <i class="fas fa-heart"></i>
+                        Poner en Adopción
+                    </button>
+                </div>
+            </form>
+        </div>
+    </main>
+
+    <script>
+        // ===== CONFIGURACIÓN Y SEGURIDAD =====
+        const API_BASE_URL = 'https://raiden-eruptible-ruthie.ngrok-free.dev';
+        const token = localStorage.getItem('token');
+
+        // Validación de token: si no existe, redirigir al login
+        if (!token) {
+            window.location.href = '../index.html';
+        }
+
+        // Configurar Axios con base URL y headers de autenticación
+        axios.defaults.baseURL = API_BASE_URL;
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        // ===== REFERENCIAS DOM =====
+        const plantForm = document.getElementById('plantForm');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const cancelBtn = document.getElementById('cancelBtn');
+        const submitBtn = document.getElementById('submitBtn');
+        const errorMessage = document.getElementById('errorMessage');
+        const errorText = document.getElementById('errorText');
+
+        // Referencias de imagen
+        const plantImageInput = document.getElementById('plantImage');
+        const fileLabel = document.getElementById('fileLabel');
+        const filePreview = document.getElementById('filePreview');
+        const previewImage = document.getElementById('previewImage');
+        const removeImageBtn = document.getElementById('removeImage');
+
+        // ===== EVENTOS DE NAVEGACIÓN =====
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '../index.html';
+        });
+
+        cancelBtn.addEventListener('click', () => {
+            if (confirm('¿Estás seguro de que deseas cancelar? Se perderán todos los datos ingresados.')) {
+                window.location.href = 'gallery.html';
+            }
+        });
+
+        // ===== MANEJO DE IMAGEN =====
+        plantImageInput.addEventListener('change', (e) => {
+            const file = e.target.files[0];
+            
+            if (file) {
+                // Validar tamaño (máx 5MB)
+                if (file.size > 5 * 1024 * 1024) {
+                    showError('La imagen es demasiado grande. El tamaño máximo es 5MB.');
+                    plantImageInput.value = '';
+                    return;
+                }
+
+                // Validar tipo
+                if (!file.type.startsWith('image/')) {
+                    showError('Por favor selecciona un archivo de imagen válido.');
+                    plantImageInput.value = '';
+                    return;
+                }
+
+                // Mostrar vista previa
+                const reader = new FileReader();
+                reader.onload = (event) => {
+                    previewImage.src = event.target.result;
+                    filePreview.classList.add('active');
+                    fileLabel.style.display = 'none';
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+
+        removeImageBtn.addEventListener('click', () => {
+            plantImageInput.value = '';
+            filePreview.classList.remove('active');
+            fileLabel.style.display = 'flex';
+            previewImage.src = '';
+        });
+
+        // ===== FUNCIONES DE UI =====
+        function showError(message) {
+            errorText.textContent = message;
+            errorMessage.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function hideError() {
+            errorMessage.classList.remove('active');
+        }
+
+        function setLoading(isLoading) {
+            submitBtn.disabled = isLoading;
+            
+            if (isLoading) {
+                submitBtn.innerHTML = `
+                    <span class="spinner"></span>
+                    Enviando...
+                `;
+            } else {
+                submitBtn.innerHTML = `
+                    <i class="fas fa-heart"></i>
+                    Poner en Adopción
+                `;
+            }
+        }
+        
+        // FUNCIÓN UTILITARIA para Tags
+        function collectTagIds(typeValue) {
+            const tagId = parseInt(typeValue); 
+            return isNaN(tagId) || tagId === 0 ? [] : [tagId];
+        }
+
+        // ===== ENVÍO DEL FORMULARIO =====
+        plantForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideError();
+
+            // Validar que todos los campos obligatorios estén llenos
+            const formData = new FormData(plantForm);
+            const requiredFields = ['name', 'type', 'location', 'description', 'luz', 'riego'];
+            
+            for (const field of requiredFields) {
+                if (!formData.get(field) || formData.get(field).trim() === '' || formData.get(field) === '0') {
+                    showError(`Por favor completa el campo: ${getFieldLabel(field)}`);
+                    return;
+                }
+            }
+
+            // Validar que haya imagen
+            if (!plantImageInput.files[0]) {
+                showError('Por favor selecciona una foto de la planta.');
+                return;
+            }
+
+            try {
+                setLoading(true);
+
+                const plantData = {
+                    name: formData.get('name').trim(),
+                    location: formData.get('location').trim(),
+                    description: formData.get('description').trim(),
+                    isCatalog: false,
+                    status: 'AVAILABLE', 
+                    tagIds: collectTagIds(formData.get('type')), 
+                    PlantCare: {
+                        light: formData.get('luz'),
+                        watering: formData.get('riego'),
+                        humidity: formData.get('humedad') || null,
+                        temperature: formData.get('temp') || null, 
+                        fertilizer: formData.get('fertilizer') || null
+                    }
+                };
+
+                const submitFormData = new FormData();
+                submitFormData.append('plantImage', plantImageInput.files[0]);
+                submitFormData.append('data', JSON.stringify(plantData));
+
+                const response = await axios.post('/plants', submitFormData);
+                
+                if (response.status === 201) {
+                    alert('¡Planta publicada con éxito! 🌱\n\nTu planta ahora está disponible en la galería.');
+                    window.location.href = 'gallery.html';
+                }
+
+            } catch (error) {
+                console.error('Error al publicar la planta:', error);
+                
+                let errorMsg = 'Error al publicar la planta. Por favor intenta de nuevo.';
+                
+                if (error.response) {
+                    if (error.response.status === 400 && error.response.data && error.response.data.errors) {
+                         errorMsg = error.response.data.errors[0].msg || 'Datos inválidos. Verifica todos los campos.';
+                    } else if (error.response.status === 401) {
+                        errorMsg = 'Sesión expirada. Por favor inicia sesión nuevamente.';
+                        setTimeout(() => {
+                            localStorage.removeItem('token');
+                            window.location.href = '../index.html';
+                        }, 2000);
+                    } else if (error.response.status === 400 || error.response.status === 413) {
+                         errorMsg = error.response.data.message || 'Datos inválidos. Verifica todos los campos.';
+                    } else if (error.response.data && error.response.data.message) {
+                        errorMsg = error.response.data.message;
+                    }
+                } else if (error.request) {
+                    errorMsg = 'No se pudo conectar con el servidor. Verifica tu conexión.';
+                }
+                
+                showError(errorMsg);
+                setLoading(false);
+            }
+        });
+
+        // ===== UTILIDADES =====
+        function getFieldLabel(fieldName) {
+            const labels = {
+                'name': 'Nombre de la Planta',
+                'type': 'Tipo/Categoría',
+                'location': 'Ubicación',
+                'description': 'Descripción',
+                'luz': 'Exposición a la Luz',
+                'riego': 'Frecuencia de Riego'
+            };
+            return labels[fieldName] || fieldName;
+        }
+
+        // ===== VALIDACIÓN EN TIEMPO REAL =====
+        plantForm.addEventListener('input', () => {
+            if (errorMessage.classList.contains('active')) {
+                hideError();
+            }
+        });
+    </script>
+</body>
+</html>

@@ -1,0 +1,962 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folium - Chat</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            height: 100vh;
+            overflow: hidden;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+        }
+
+        /* Header */
+        .chat-header {
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.08);
+            border-bottom: 1px solid #e8e8e8;
+            position: relative;
+            z-index: 100;
+        }
+
+        .back-btn {
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            color: #1a1a1a;
+            width: 40px;
+            height: 40px;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.3s;
+            font-size: 16px;
+        }
+
+        .back-btn:hover {
+            background: #f8f8f8;
+            border-color: #c0c0c0;
+        }
+
+        .chat-header-info {
+            flex: 1;
+        }
+
+        .chat-title {
+            font-size: 18px;
+            font-weight: 600;
+            margin-bottom: 3px;
+            color: #1a1a1a;
+            letter-spacing: 0.1px;
+        }
+
+        .chat-subtitle {
+            font-size: 13px;
+            color: #777777;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 400;
+        }
+
+        .status-indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #2d6a4f;
+            animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .finalize-btn {
+            padding: 10px 20px;
+            background: #1a1a1a;
+            border: none;
+            color: #ffffff;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            letter-spacing: 0.3px;
+        }
+
+        .finalize-btn:hover:not(:disabled) {
+            background: #2d2d2d;
+            transform: translateY(-1px);
+        }
+
+        .finalize-btn:disabled {
+            background: #c0c0c0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Chat Container */
+        .chat-container {
+            height: calc(100vh - 70px);
+            display: flex;
+            flex-direction: column;
+            max-width: 900px;
+            margin: 0 auto;
+            background: #ffffff;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border-left: 1px solid #e8e8e8;
+            border-right: 1px solid #e8e8e8;
+        }
+
+        /* Message Area */
+        .message-area {
+            flex: 1;
+            padding: 20px;
+            overflow-y: auto;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            background: #fafafa;
+        }
+
+        .message-area::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        .message-area::-webkit-scrollbar-track {
+            background: #f5f5f5;
+        }
+
+        .message-area::-webkit-scrollbar-thumb {
+            background: #d0d0d0;
+            border-radius: 4px;
+        }
+
+        .message-area::-webkit-scrollbar-thumb:hover {
+            background: #b0b0b0;
+        }
+
+        /* Messages */
+        .message {
+            display: flex;
+            gap: 10px;
+            align-items: flex-end;
+            max-width: 70%;
+            animation: slideIn 0.3s ease;
+        }
+
+        @keyframes slideIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .message.sent {
+            align-self: flex-end;
+            flex-direction: row-reverse;
+        }
+
+        .message.received {
+            align-self: flex-start;
+        }
+
+        .message-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #2d6a4f;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 14px;
+            flex-shrink: 0;
+            font-family: 'Playfair Display', serif;
+        }
+
+        .message.received .message-avatar {
+            background: #1a1a1a;
+        }
+
+        .message-content {
+            display: flex;
+            flex-direction: column;
+            gap: 5px;
+        }
+
+        .message-bubble {
+            padding: 12px 16px;
+            border-radius: 18px;
+            word-wrap: break-word;
+            line-height: 1.5;
+            font-size: 15px;
+            font-weight: 400;
+        }
+
+        .message.sent .message-bubble {
+            background: #1a1a1a;
+            color: #ffffff;
+            border-bottom-right-radius: 4px;
+        }
+
+        .message.received .message-bubble {
+            background: #ffffff;
+            color: #1a1a1a;
+            border: 1px solid #e0e0e0;
+            border-bottom-left-radius: 4px;
+        }
+
+        .message-info {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 12px;
+            color: #999999;
+            padding: 0 8px;
+            font-weight: 400;
+        }
+        
+        .message.sent .message-info {
+            justify-content: flex-end;
+        }
+
+        .message-sender {
+            font-weight: 500;
+            color: #777777;
+        }
+
+        .message.sent .message-info .message-sender {
+            color: #666666;
+        }
+        
+        .message-time {
+            color: #999999;
+        }
+
+        /* System Messages */
+        .system-message {
+            align-self: center;
+            background: #fff3cd;
+            color: #856404;
+            padding: 10px 20px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            text-align: center;
+            max-width: 80%;
+            border: 1px solid #ffeaa7;
+        }
+
+        .system-message.success {
+            background: #d4edda;
+            color: #155724;
+            border-color: #c3e6cb;
+        }
+
+        .system-message i {
+            margin-right: 5px;
+        }
+
+        /* Input Area */
+        .input-area {
+            padding: 20px;
+            background: #ffffff;
+            border-top: 1px solid #e8e8e8;
+            display: flex;
+            gap: 12px;
+            align-items: flex-end;
+        }
+
+        .input-wrapper {
+            flex: 1;
+            display: flex;
+            background: #f8f8f8;
+            border: 2px solid #e0e0e0;
+            border-radius: 24px;
+            padding: 8px 16px;
+            transition: all 0.3s;
+        }
+
+        .input-wrapper:focus-within {
+            border-color: #2d6a4f;
+            background: #ffffff;
+        }
+
+        .input-wrapper.disabled {
+            background: #f0f0f0;
+            border-color: #d0d0d0;
+        }
+
+        .message-input {
+            flex: 1;
+            border: none;
+            background: transparent;
+            padding: 8px;
+            font-size: 15px;
+            font-family: 'Inter', sans-serif;
+            resize: none;
+            max-height: 120px;
+            line-height: 1.4;
+            color: #1a1a1a;
+            font-weight: 400;
+        }
+
+        .message-input::placeholder {
+            color: #999999;
+        }
+
+        .message-input:focus {
+            outline: none;
+        }
+
+        .message-input:disabled {
+            cursor: not-allowed;
+        }
+
+        .send-btn {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: #1a1a1a;
+            border: none;
+            color: #ffffff;
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-shrink: 0;
+        }
+
+        .send-btn:hover:not(:disabled) {
+            background: #2d2d2d;
+            transform: scale(1.05);
+        }
+
+        .send-btn:disabled {
+            background: #c0c0c0;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading State */
+        .loading-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 15px;
+            color: #777777;
+        }
+
+        .loading-state i {
+            font-size: 48px;
+            color: #2d6a4f;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Empty State */
+        .empty-state {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100%;
+            gap: 15px;
+            color: #999999;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #e0e0e0;
+        }
+
+        .empty-state h3 {
+            color: #666666;
+            font-size: 20px;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            color: #999999;
+            font-weight: 400;
+        }
+
+        /* Typing Indicator */
+        .typing-indicator {
+            display: none;
+            align-items: center;
+            gap: 10px;
+            padding: 12px 16px;
+            background: #ffffff;
+            border: 1px solid #e0e0e0;
+            border-radius: 18px;
+            border-bottom-left-radius: 4px;
+            max-width: 70px;
+        }
+
+        .typing-indicator.active {
+            display: flex;
+        }
+
+        .typing-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #999999;
+            animation: typing 1.4s infinite;
+        }
+
+        .typing-dot:nth-child(2) {
+            animation-delay: 0.2s;
+        }
+
+        .typing-dot:nth-child(3) {
+            animation-delay: 0.4s;
+        }
+
+        @keyframes typing {
+            0%, 60%, 100% {
+                transform: translateY(0);
+                opacity: 0.7;
+            }
+            30% {
+                transform: translateY(-10px);
+                opacity: 1;
+            }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .chat-container {
+                max-width: 100%;
+                border-left: none;
+                border-right: none;
+            }
+
+            .message {
+                max-width: 85%;
+            }
+
+            .chat-title {
+                font-size: 16px;
+            }
+
+            .finalize-btn {
+                padding: 8px 12px;
+                font-size: 12px;
+            }
+
+            .finalize-btn span {
+                display: none;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-header">
+        <button class="back-btn" id="backBtn">
+            <i class="fas fa-arrow-left"></i>
+        </button>
+        
+        <div class="chat-header-info">
+            <div class="chat-title" id="chatTitle">Cargando chat...</div>
+            <div class="chat-subtitle">
+                <span class="status-indicator"></span>
+                <span id="chatStatus">Conectando...</span>
+            </div>
+        </div>
+
+        <button class="finalize-btn" id="finalizeBtn">
+            <i class="fas fa-handshake"></i>
+            <span>Finalizar Acuerdo</span>
+        </button>
+    </div>
+
+    <div class="chat-container">
+        <div class="message-area" id="messageArea">
+            <div class="loading-state">
+                <i class="fas fa-spinner"></i>
+                <div>Cargando mensajes...</div>
+            </div>
+        </div>
+
+        <div class="input-area">
+            <div class="input-wrapper" id="inputWrapper">
+                <textarea 
+                    class="message-input" 
+                    id="messageInput" 
+                    placeholder="Escribe un mensaje..."
+                    rows="1"
+                ></textarea>
+            </div>
+            <button class="send-btn" id="sendBtn">
+                <i class="fas fa-paper-plane"></i>
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // ===== CONFIGURACIÓN Y SEGURIDAD =====
+        const API_BASE_URL = 'https://raiden-eruptible-ruthie.ngrok-free.dev';
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = '../index.html';
+        }
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const requestId = urlParams.get('requestId');
+
+        if (!requestId) {
+            alert('No se especificó una solicitud de chat.');
+            window.location.href = 'requests.html';
+        }
+
+        axios.defaults.baseURL = API_BASE_URL;
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+        function getUserIdFromToken(token) {
+            try {
+                if (!token || token.split('.').length !== 3) {
+                    console.error('Token no válido o mal formado.');
+                    return null;
+                }
+
+                const payload = token.split('.')[1];
+                const decoded = JSON.parse(atob(payload));
+                
+                const possibleKeys = ['id', 'userId', 'sub', 'user_id', 'uid']; 
+                
+                let userId = null;
+                for (const key of possibleKeys) {
+                    if (decoded[key] !== undefined) {
+                        userId = decoded[key];
+                        break; 
+                    }
+                }
+
+                if (!userId) {
+                    console.error('Token decodificado, pero no se encontró un ID válido en las claves esperadas. Payload:', decoded);
+                    return null;
+                }
+
+                return userId;
+            } catch (error) {
+                console.error('Error al decodificar token (Atob/JSON parse falló):', error);
+                return null;
+            }
+        }
+
+        const currentUserId = getUserIdFromToken(token);
+
+        if (!currentUserId) {
+            alert('Sesión inválida. Por favor, inicia sesión de nuevo.');
+            localStorage.removeItem('token');
+            window.location.href = '../index.html'; 
+        }
+
+        // ===== VARIABLES GLOBALES =====
+        let messages = []; 
+        let isAgreementFinalized = false;
+        let pollingInterval = null;
+        let otherUserName = 'Usuario Desconocido'; 
+        let otherUserId = null; 
+        let plantName = 'Planta';
+        let initialLoadCompleted = false; 
+
+        // ===== REFERENCIAS DOM =====
+        const messageArea = document.getElementById('messageArea');
+        const messageInput = document.getElementById('messageInput');
+        const sendBtn = document.getElementById('sendBtn');
+        const finalizeBtn = document.getElementById('finalizeBtn');
+        const backBtn = document.getElementById('backBtn');
+        const chatTitle = document.getElementById('chatTitle');
+        const chatStatus = document.getElementById('chatStatus');
+        const inputWrapper = document.getElementById('inputWrapper');
+
+        // ===== EVENTOS =====
+        backBtn.addEventListener('click', () => {
+            window.location.href = 'requests.html';
+        });
+
+        sendBtn.addEventListener('click', sendMessage);
+
+        messageInput.addEventListener('keypress', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        messageInput.addEventListener('input', function() {
+            this.style.height = 'auto';
+            this.style.height = (this.scrollHeight) + 'px';
+        });
+
+        finalizeBtn.addEventListener('click', finalizeAgreement);
+
+        // ===== CARGAR Y ACTUALIZAR MENSAJES =====
+        async function loadMessages() {
+            try {
+                const response = await axios.get(`/messages/${requestId}`);
+                const data = response.data;
+                const newMessages = data.messages || [];
+                const wasFinalized = isAgreementFinalized;
+                
+                isAgreementFinalized = data.isAgreementFinalized || false;
+                
+                if (!initialLoadCompleted) {
+                    messages = newMessages; 
+                    
+                    if (data.request) {
+                        const request = data.request;
+                        plantName = request.Plant?.name || 'Planta';
+                        
+                        let targetUser = null; 
+                        let defaultRoleName = 'Usuario';
+
+                        const currentId = currentUserId;
+                        const donatorId = request.Plant?.Donator?.id;
+                        const requesterId = request.Requester?.id;
+
+                        if (String(donatorId) === String(currentId)) {
+                            targetUser = request.Requester;
+                            defaultRoleName = 'Solicitante';
+                        } else if (String(requesterId) === String(currentId)) {
+                            targetUser = request.Plant?.Donator;
+                            defaultRoleName = 'Donante';
+                        }
+                        
+                        if (targetUser) {
+                            otherUserId = targetUser.id;
+                            
+                            const nameFromDB = targetUser.name ? targetUser.name.trim() : '';
+                            
+                            if (nameFromDB !== '') {
+                                otherUserName = nameFromDB;
+                            } else {
+                                otherUserName = defaultRoleName;
+                            }
+                        } else {
+                            otherUserName = 'Usuario Desconocido'; 
+                        }
+                    }
+
+                    updateChatHeader();
+                    renderMessages(newMessages, true); 
+                    updateInputState();
+                    initialLoadCompleted = true;
+                    return;
+                }
+
+                const newMessagesCount = newMessages.length;
+                const currentMessagesCount = messages.length;
+
+                if (newMessagesCount > currentMessagesCount) {
+                    const addedMessages = newMessages.slice(currentMessagesCount);
+                    messages = newMessages; 
+                    renderMessages(addedMessages, false); 
+                } else if (isAgreementFinalized !== wasFinalized) {
+                    renderSystemMessage(true);
+                    updateInputState();
+                }
+
+            } catch (error) {
+                console.error('Error al cargar mensajes:', error);
+                
+                if (!initialLoadCompleted) {
+                    const status = error.response?.status;
+                    let errorMessage = 'No se pudo conectar con el servidor o la solicitud es inválida.';
+                    
+                    if (status === 403) {
+                        errorMessage = 'No tienes permiso para acceder a este chat (Solicitud no aceptada o no eres participante).';
+                    } else if (status === 401) {
+                        errorMessage = 'Tu sesión ha expirado o es inválida.';
+                        localStorage.removeItem('token');
+                        stopPolling();
+                    }
+
+                    messageArea.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-exclamation-circle"></i>
+                            <h3>Error al cargar el chat</h3>
+                            <p>${errorMessage}</p>
+                        </div>
+                    `;
+                }
+            }
+        }
+
+        // ===== ACTUALIZAR HEADER =====
+        function updateChatHeader() {
+            chatTitle.textContent = `Chat sobre: ${plantName}`;
+            chatStatus.textContent = isAgreementFinalized 
+                ? 'Acuerdo finalizado' 
+                : `Conversando con ${otherUserName}`;
+        }
+
+        // ===== RENDERIZAR MENSAJES =====
+        function renderMessages(msgsToRender, renderAll) {
+            const scrolledToBottom = isScrolledToBottom();
+
+            if (renderAll) {
+                if (msgsToRender.length === 0) {
+                    messageArea.innerHTML = `
+                        <div class="empty-state">
+                            <i class="fas fa-comments"></i>
+                            <h3>Sin mensajes aún</h3>
+                            <p>Envía el primer mensaje para iniciar la conversación</p>
+                        </div>
+                    `;
+                    renderSystemMessage(false); 
+                    return;
+                }
+                messageArea.innerHTML = '';
+            }
+            
+            const newMessagesHtml = msgsToRender.map(msg => {
+                const isSent = String(msg.senderId) === String(currentUserId);
+                
+                const senderName = isSent 
+                    ? 'Tú' 
+                    : otherUserName; 
+
+                const timestamp = msg.createdAt 
+                    ? new Date(msg.createdAt).toLocaleTimeString('es-ES', {
+                        hour: '2-digit',
+                        minute: '2-digit'
+                    })
+                    : '';
+
+                const avatarLetter = senderName.charAt(0).toUpperCase();
+
+                return `
+                    <div class="message ${isSent ? 'sent' : 'received'}">
+                        <div class="message-avatar">${avatarLetter}</div>
+                        <div class="message-content">
+                            <div class="message-info">
+                                <span class="message-sender">${senderName}</span>
+                            </div>
+                            <div class="message-bubble">${escapeHtml(msg.content)}</div>
+                            <div class="message-info message-time-info">
+                                <span class="message-time">${timestamp}</span>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+
+            messageArea.innerHTML += newMessagesHtml;
+
+            if (renderAll) {
+                renderSystemMessage(false);
+            }
+            
+            if (scrolledToBottom || msgsToRender.some(msg => String(msg.senderId) === String(currentUserId))) {
+                scrollToBottom();
+            }
+        }
+
+        // ===== RENDERIZAR MENSAJE DE SISTEMA =====
+        function renderSystemMessage(onlySystem) {
+            const systemMsgHtml = `
+                <div class="system-message success" id="systemFinalizedMessage">
+                    <i class="fas fa-check-circle"></i>
+                    Acuerdo finalizado. ¡La adopción ha sido completada con éxito!
+                </div>
+            `;
+            
+            const existingSystemMsg = document.getElementById('systemFinalizedMessage');
+
+            if (isAgreementFinalized) {
+                if (!existingSystemMsg) {
+                    messageArea.innerHTML += systemMsgHtml;
+                }
+            } else {
+                if (existingSystemMsg) {
+                    existingSystemMsg.remove();
+                }
+            }
+        }
+
+        // ===== ENVIAR MENSAJE =====
+        async function sendMessage() {
+            const content = messageInput.value.trim();
+            
+            if (!content || isAgreementFinalized) {
+                return;
+            }
+
+            try {
+                messageInput.disabled = true;
+                sendBtn.disabled = true;
+
+                await axios.post(`/messages/${requestId}`, {
+                    content: content
+                });
+
+                messageInput.value = '';
+                messageInput.style.height = 'auto';
+
+                await loadMessages();
+
+            } catch (error) {
+                console.error('Error al enviar mensaje:', error);
+                alert('Error al enviar el mensaje. Por favor intenta de nuevo.');
+            } finally {
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                messageInput.focus();
+            }
+        }
+
+        // ===== FINALIZAR ACUERDO =====
+        async function finalizeAgreement() {
+            if (isAgreementFinalized) {
+                return;
+            }
+
+            const confirmed = confirm(
+                '¿Estás seguro de que deseas finalizar el acuerdo?\n\n' +
+                'Esta acción marcará la adopción como completada y no se podrá deshacer.'
+            );
+
+            if (!confirmed) {
+                return;
+            }
+
+            try {
+                finalizeBtn.disabled = true;
+                finalizeBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Finalizando...';
+
+                await axios.put(`/messages/${requestId}/finalize`);
+
+                isAgreementFinalized = true;
+
+                updateChatHeader();
+                renderSystemMessage(true);
+                updateInputState();
+                scrollToBottom();
+
+                alert('¡Acuerdo finalizado con éxito! La adopción ha sido completada.');
+                
+                stopPolling();
+
+            } catch (error) {
+                console.error('Error al finalizar acuerdo:', error);
+                
+                const errorMsg = error.response?.data?.message 
+                    || 'Error al finalizar el acuerdo. Por favor intenta de nuevo.';
+                
+                alert(errorMsg);
+
+                finalizeBtn.disabled = false;
+                finalizeBtn.innerHTML = '<i class="fas fa-handshake"></i><span>Finalizar Acuerdo</span>';
+            }
+        }
+
+        // ===== ACTUALIZAR ESTADO DE INPUT =====
+        function updateInputState() {
+            if (isAgreementFinalized) {
+                messageInput.disabled = true;
+                sendBtn.disabled = true;
+                finalizeBtn.disabled = true;
+                inputWrapper.classList.add('disabled');
+                messageInput.placeholder = 'El acuerdo ha sido finalizado';
+            } else {
+                messageInput.disabled = false;
+                sendBtn.disabled = false;
+                finalizeBtn.disabled = false;
+                inputWrapper.classList.remove('disabled');
+                messageInput.placeholder = 'Escribe un mensaje...';
+            }
+        }
+
+        // ===== POLLING =====
+        function startPolling() {
+            if (pollingInterval) return;
+            
+            pollingInterval = setInterval(async () => {
+                if (!isAgreementFinalized) {
+                    await loadMessages();
+                } else {
+                    stopPolling();
+                }
+            }, 3000);
+        }
+
+        function stopPolling() {
+            if (pollingInterval) {
+                clearInterval(pollingInterval);
+                pollingInterval = null;
+            }
+        }
+
+        // ===== UTILIDADES =====
+        function scrollToBottom() {
+            setTimeout(() => {
+                messageArea.scrollTop = messageArea.scrollHeight;
+            }, 100);
+        }
+
+        function isScrolledToBottom() {
+            const threshold = 150; 
+            return messageArea.scrollHeight - messageArea.scrollTop - messageArea.clientHeight < threshold;
+        }
+
+        function escapeHtml(text) {
+            const div = document.createElement('div');
+            div.textContent = text;
+            return div.innerHTML;
+        }
+
+        // ===== INICIALIZACIÓN =====
+        async function init() {
+            await loadMessages(); 
+            startPolling(); 
+        }
+
+        window.addEventListener('beforeunload', stopPolling);
+
+        init();
+    </script>
+</body>
+</html>

@@ -1,0 +1,820 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folium - Mi Perfil</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+        
+        body { 
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            font-weight: 400;
+            letter-spacing: 0.2px;
+        }
+
+        /* Header - Replicado de gallery.html */
+        .header {
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 20px 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid #e8e8e8;
+        }
+        
+        .header-content { 
+            max-width: 1400px; 
+            margin: 0 auto; 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            gap: 30px; 
+        }
+        
+        .logo { 
+            display: flex; 
+            align-items: center; 
+            gap: 10px; 
+            font-family: 'Playfair Display', serif;
+            font-size: 28px;
+            font-weight: 600;
+            cursor: pointer;
+            text-decoration: none;
+            color: #1a1a1a;
+            letter-spacing: 0.5px;
+        }
+        
+        .logo svg {
+            color: #1a1a1a;
+            width: 26px;
+            height: 26px;
+        }
+        
+        .header-actions { 
+            display: flex; 
+            align-items: center; 
+            gap: 12px; 
+        }
+        
+        .header-btn { 
+            padding: 10px 20px;
+            border: 1px solid #e0e0e0;
+            background: #ffffff;
+            color: #1a1a1a;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+        
+        .header-btn:hover { 
+            background: #f8f8f8;
+            border-color: #c0c0c0;
+        }
+        
+        .header-btn.logout { 
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .header-btn.logout:hover { 
+            background: #2d2d2d;
+            border-color: #2d2d2d;
+        }
+
+        /* Main Content */
+        .profile-container { 
+            margin-top: 90px;
+            padding: 30px 40px 80px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+        
+        /* Profile Header */
+        .profile-header { 
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e8e8e8;
+            padding: 40px;
+            margin-bottom: 30px;
+        }
+        
+        .profile-info { 
+            display: flex; 
+            align-items: center; 
+            gap: 30px; 
+            margin-bottom: 30px; 
+        }
+        
+        .profile-avatar { 
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #2d6a4f;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 42px;
+            font-weight: 700;
+            font-family: 'Playfair Display', serif;
+            box-shadow: 0 4px 12px rgba(45, 106, 79, 0.2);
+            flex-shrink: 0;
+        }
+        
+        .profile-details { 
+            flex: 1; 
+        }
+        
+        .profile-name { 
+            font-family: 'Playfair Display', serif;
+            font-size: 32px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 8px;
+            letter-spacing: 0.2px;
+        }
+        
+        .profile-email { 
+            font-size: 15px;
+            color: #777777;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-weight: 400;
+        }
+        
+        .profile-email i { 
+            color: #2d6a4f;
+            font-size: 14px;
+        }
+        
+        /* Stats */
+        .stats { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); 
+            gap: 20px; 
+        }
+        
+        .stat-card { 
+            background: #f8f8f8;
+            padding: 20px;
+            border-radius: 12px;
+            text-align: center;
+            border: 1px solid #eeeeee;
+            transition: all 0.3s;
+        }
+        
+        .stat-card:hover { 
+            border-color: #2d6a4f;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 106, 79, 0.15);
+        }
+        
+        .stat-icon { 
+            font-size: 32px;
+            color: #2d6a4f;
+            margin-bottom: 10px;
+        }
+        
+        .stat-value { 
+            font-size: 28px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 5px;
+        }
+        
+        .stat-label { 
+            font-size: 13px;
+            color: #777777;
+            font-weight: 500;
+        }
+
+        /* Section */
+        .section { 
+            margin-bottom: 40px; 
+        }
+        
+        .section-header { 
+            display: flex; 
+            align-items: center; 
+            justify-content: space-between; 
+            margin-bottom: 25px; 
+        }
+        
+        .section-title { 
+            font-size: 24px;
+            font-weight: 600;
+            color: #1a1a1a;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            letter-spacing: 0.1px;
+        }
+        
+        .section-title i { 
+            color: #2d6a4f;
+            font-size: 22px;
+        }
+
+        /* Profile Cards Grid */
+        .profile-cards-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); 
+            gap: 20px; 
+        }
+        
+        .profile-card { 
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            border: 1px solid #e8e8e8;
+            transition: all 0.3s;
+        }
+        
+        .profile-card:hover { 
+            transform: translateY(-3px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .card-image-container { 
+            position: relative; 
+            height: 200px; 
+            overflow: hidden; 
+        }
+        
+        .card-image { 
+            width: 100%; 
+            height: 100%; 
+            object-fit: cover; 
+        }
+        
+        .card-badge { 
+            position: absolute;
+            top: 12px;
+            right: 12px;
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 8px 18px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+        }
+        
+        /* Status Colors */
+        .status-available { 
+            background: #ffffff;
+            color: #1a1a1a;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.1);
+        }
+        
+        .status-pending { 
+            background: #ffc107;
+            color: #000000;
+        }
+        
+        .status-adopted { 
+            background: #e0e0e0;
+            color: #666666;
+        }
+        
+        .status-success { 
+            background: #2d6a4f;
+            color: #ffffff;
+        }
+        
+        .status-rejected { 
+            background: #dc3545;
+            color: #ffffff;
+        }
+
+        .card-content { 
+            padding: 18px 16px;
+        }
+        
+        .card-title { 
+            font-size: 16px;
+            font-weight: 600;
+            color: #1a1a1a;
+            margin-bottom: 10px;
+            letter-spacing: 0.1px;
+        }
+        
+        .card-info { 
+            display: flex; 
+            flex-direction: column; 
+            gap: 8px; 
+            margin-bottom: 15px; 
+        }
+        
+        .card-info-item { 
+            display: flex; 
+            align-items: center; 
+            gap: 8px; 
+            font-size: 13px;
+            color: #777777;
+            font-weight: 400;
+        }
+        
+        .card-info-item i { 
+            color: #2d6a4f;
+            width: 14px;
+            font-size: 13px;
+        }
+        
+        /* Actions */
+        .card-actions { 
+            display: flex; 
+            gap: 10px; 
+            margin-top: 15px; 
+        }
+        
+        .btn-action { 
+            flex: 1;
+            padding: 12px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            text-decoration: none;
+        }
+        
+        .btn-primary { 
+            background: #1a1a1a;
+            color: #ffffff;
+        }
+        
+        .btn-primary:hover { 
+            background: #2d2d2d;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .btn-secondary { 
+            background: #2d6a4f;
+            color: #ffffff;
+        }
+        
+        .btn-secondary:hover { 
+            background: #1f5039;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(45, 106, 79, 0.3);
+        }
+
+        /* Loading & Empty States */
+        .loading { 
+            text-align: center; 
+            padding: 80px 20px;
+            font-size: 16px;
+            color: #999999;
+            grid-column: 1 / -1;
+            font-weight: 400;
+        }
+        
+        .loading i { 
+            font-size: 48px;
+            color: #2d6a4f;
+            margin-bottom: 20px;
+            animation: spin 1s linear infinite;
+        }
+        
+        @keyframes spin { 
+            100% { transform: rotate(360deg); } 
+        }
+
+        .empty-state { 
+            text-align: center; 
+            padding: 80px 20px;
+            background: #ffffff;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #e8e8e8;
+            grid-column: 1 / -1;
+        }
+        
+        .empty-state i { 
+            font-size: 64px;
+            color: #e0e0e0;
+            margin-bottom: 20px;
+        }
+        
+        .empty-state h3 { 
+            font-size: 20px;
+            color: #666666;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+        
+        .empty-state p { 
+            color: #999999;
+            font-size: 14px;
+            font-weight: 400;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content { 
+                flex-wrap: wrap; 
+            }
+            
+            .header-actions { 
+                flex-wrap: wrap; 
+            }
+            
+            .profile-container { 
+                padding: 30px 20px 80px; 
+            }
+            
+            .profile-header { 
+                padding: 30px 20px; 
+            }
+            
+            .profile-info { 
+                flex-direction: column; 
+                text-align: center; 
+            }
+            
+            .profile-name { 
+                font-size: 24px; 
+            }
+            
+            .stats { 
+                grid-template-columns: 1fr; 
+            }
+            
+            .profile-cards-grid { 
+                grid-template-columns: 1fr; 
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="gallery.html" class="logo">
+                <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 2C16 2 8 10 8 18C8 22.4183 11.5817 26 16 26C20.4183 26 24 22.4183 24 18C24 10 16 2 16 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 12V26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 16C12 16 14 18 16 18C18 18 20 16 20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Folium</span>
+            </a>
+
+            <div class="header-actions">
+                <a href="gallery.html" class="header-btn">
+                    <i class="fas fa-th-large"></i>
+                    <span>Galería</span>
+                </a>
+                <a href="requests.html" class="header-btn">
+                    <i class="fas fa-handshake"></i>
+                    <span>Solicitudes</span>
+                </a>
+                <a href="profile.html" class="header-btn">
+                    <i class="fas fa-user"></i>
+                    <span>Mi Perfil</span>
+                </a>
+                <button class="header-btn logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Salir</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="profile-container">
+        <div class="profile-header">
+            <div class="profile-info">
+                <div class="profile-avatar" id="profileAvatar">U</div>
+                <div class="profile-details">
+                    <h1 class="profile-name" id="profileName">Cargando...</h1>
+                    <p class="profile-email">
+                        <i class="fas fa-envelope"></i>
+                        <span id="profileEmailSpan">Cargando...</span>
+                    </p>
+                </div>
+            </div>
+
+            <div class="stats">
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-seedling"></i></div>
+                    <div class="stat-value" id="statPlants">0</div>
+                    <div class="stat-label">Plantas Donadas</div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon"><i class="fas fa-paper-plane"></i></div>
+                    <div class="stat-value" id="statRequests">0</div>
+                    <div class="stat-label">Solicitudes Enviadas</div>
+                </div>
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-hand-holding-heart"></i>
+                    Mis Publicaciones
+                </h2>
+            </div>
+            <div id="donatedPlantsGrid" class="profile-cards-grid">
+            </div>
+        </div>
+
+        <div class="section">
+            <div class="section-header">
+                <h2 class="section-title">
+                    <i class="fas fa-inbox"></i>
+                    Mis Solicitudes Enviadas
+                </h2>
+            </div>
+            <div id="adoptionRequestsGrid" class="profile-cards-grid">
+            </div>
+        </div>
+    </main>
+
+    <script>
+        // ===== CONFIGURACIÓN Y SEGURIDAD =====
+        const API_BASE_URL = 'https://raiden-eruptible-ruthie.ngrok-free.dev';
+        const token = localStorage.getItem('token');
+
+        if (!token) {
+            window.location.href = '../index.html';
+            throw new Error('No token found, redirecting.');
+        }
+
+        axios.defaults.baseURL = API_BASE_URL;
+        axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+        
+        let globalUserId = null;
+
+        // ===== REFERENCIAS DOM Y Eventos =====
+        const profileAvatar = document.getElementById('profileAvatar');
+        const profileName = document.getElementById('profileName');
+        const profileEmailSpan = document.getElementById('profileEmailSpan');
+        const statPlants = document.getElementById('statPlants');
+        const statRequests = document.getElementById('statRequests');
+        const donatedPlantsGrid = document.getElementById('donatedPlantsGrid');
+        const adoptionRequestsGrid = document.getElementById('adoptionRequestsGrid');
+        const logoutBtn = document.getElementById('logoutBtn');
+
+        logoutBtn.addEventListener('click', () => {
+            localStorage.removeItem('token');
+            window.location.href = '../index.html';
+        });
+        
+        const showLoading = (element) => {
+            element.innerHTML = `
+                <div class="loading" style="grid-column: 1 / -1;">
+                    <div><i class="fas fa-spinner"></i></div>
+                    <div>Cargando información...</div>
+                </div>
+            `;
+        };
+
+        const showEmptyOrErrorState = (element, isError, title, message) => {
+            const iconClass = isError ? 'fa-exclamation-circle' : 'fa-seedling';
+            const color = isError ? '#dc3545' : '#e0e0e0';
+            element.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas ${iconClass}" style="color: ${color};"></i>
+                    <h3>${title}</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+        };
+
+        function getStatusInfo(status) {
+            const normalizedStatus = (status || 'PENDING').toUpperCase();
+            switch (normalizedStatus) {
+                case 'AVAILABLE':
+                    return { class: 'status-available', text: 'Disponible' };
+                case 'ADOPTED':
+                    return { class: 'status-adopted', text: 'Adoptada' };
+                case 'ACCEPTED':
+                    return { class: 'status-success', text: 'Aceptada' };
+                case 'REJECTED':
+                    return { class: 'status-rejected', text: 'Rechazada' };
+                case 'PENDING':
+                default:
+                    return { class: 'status-pending', text: 'Pendiente' };
+            }
+        }
+        
+        async function loadUserInfo() {
+            try {
+                const response = await axios.get('/users/profile');
+                const user = response.data;
+                
+                globalUserId = user.id; 
+
+                profileName.textContent = user.name || 'Usuario';
+                profileEmailSpan.textContent = user.email || 'email@ejemplo.com';
+                
+                const firstLetter = (user.name || 'U').charAt(0).toUpperCase();
+                profileAvatar.textContent = firstLetter;
+                
+                return globalUserId;
+
+            } catch (error) {
+                console.error('Error al cargar información del perfil:', error);
+                
+                if (error.response && (error.response.status === 401 || error.response.status === 403)) {
+                    alert('Sesión expirada o no válida. Redirigiendo al login.');
+                    localStorage.removeItem('token');
+                    window.location.href = '../index.html';
+                } else {
+                    profileName.textContent = 'Error al cargar datos';
+                    profileEmailSpan.textContent = 'Verifica la conexión con el servidor.';
+                }
+                
+                return null;
+            }
+        }
+
+        async function loadDonatedPlants(userId) {
+            if (!userId) {
+                showEmptyOrErrorState(donatedPlantsGrid, true, 'Error de Identidad', 'No se pudo obtener el ID del usuario.');
+                return;
+            }
+
+            showLoading(donatedPlantsGrid);
+            try {
+                const response = await axios.get(`/plants/my-plants`);
+                
+                const plants = response.data.plants || response.data || [];
+                
+                statPlants.textContent = plants.length;
+                renderDonatedPlants(plants);
+
+            } catch (error) {
+                console.error('Error al cargar plantas donadas:', error);
+                showEmptyOrErrorState(donatedPlantsGrid, true, 'Error al cargar publicaciones', 'No se pudo conectar con el servidor o los datos son incorrectos.');
+            }
+        }
+
+        function renderDonatedPlants(plants) {
+            if (plants.length === 0) {
+                showEmptyOrErrorState(donatedPlantsGrid, false, 'Sin publicaciones aún', 'Anímate a compartir tus plantas con la comunidad Folium.');
+                return;
+            }
+
+            donatedPlantsGrid.innerHTML = plants.map(plant => {
+                const { class: statusClass, text: statusText } = getStatusInfo(plant.status);
+
+                const imageUrl = plant.image_url || 'https://via.placeholder.com/320x200?text=Planta';
+                const plantName = plant.name || 'Sin nombre';
+                const plantType = plant.type || 'Sin categoría';
+                const plantLocation = plant.location || 'Sin ubicación';
+
+                return `
+                    <div class="profile-card">
+                        <div class="card-image-container">
+                            <img src="${imageUrl}" alt="${plantName}" class="card-image">
+                            <span class="card-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">${plantName}</h3>
+                            <div class="card-info">
+                                <div class="card-info-item">
+                                    <i class="fas fa-tag"></i>
+                                    <span>${plantType}</span>
+                                </div>
+                                <div class="card-info-item">
+                                    <i class="fas fa-map-marker-alt"></i>
+                                    <span>${plantLocation}</span>
+                                </div>
+                            </div>
+                            <div class="card-actions">
+                                <a href="requests.html?plantId=${plant.id}" class="btn-action btn-primary">
+                                    <i class="fas fa-inbox"></i>
+                                    Ver Solicitudes
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function loadAdoptionRequests(userId) {
+            if (!userId) {
+                showEmptyOrErrorState(adoptionRequestsGrid, true, 'Error de Identidad', 'No se pudo obtener el ID del usuario para cargar las solicitudes.');
+                return;
+            }
+            
+            showLoading(adoptionRequestsGrid);
+            try {
+                const response = await axios.get(`/requests/outgoing`); 
+                
+                const requests = response.data.requests || response.data || [];
+
+                statRequests.textContent = requests.length;
+                renderAdoptionRequests(requests);
+
+            } catch (error) {
+                console.error('Error al cargar solicitudes:', error);
+                showEmptyOrErrorState(adoptionRequestsGrid, true, 'Error al cargar solicitudes', 'No se pudo conectar con el servidor o los datos son incorrectos.');
+            }
+        }
+
+        function renderAdoptionRequests(requests) {
+            if (requests.length === 0) {
+                showEmptyOrErrorState(adoptionRequestsGrid, false, 'Sin solicitudes enviadas', 'Busca en la Galería y haz una solicitud para adoptar una planta.');
+                return;
+            }
+
+            adoptionRequestsGrid.innerHTML = requests.map(request => {
+                const plant = request.Plant || {};
+                const donator = plant.Donator || {};
+                
+                const { class: statusClass, text: statusText } = getStatusInfo(request.status);
+                let actionButton = '';
+                
+                if (statusText === 'Aceptada') {
+                    actionButton = `
+                        <a href="chat.html?requestId=${request.id}" class="btn-action btn-secondary">
+                            <i class="fas fa-comments"></i>
+                            Ir al Chat
+                        </a>
+                    `;
+                }
+
+                const imageUrl = plant.image_url || 'https://via.placeholder.com/320x200?text=Planta';
+                const plantName = plant.name || 'Planta sin nombre';
+                const plantType = plant.type || 'Sin categoría';
+                const donatorName = donator.name || 'Usuario desconocido';
+
+                return `
+                    <div class="profile-card">
+                        <div class="card-image-container">
+                            <img src="${imageUrl}" alt="${plantName}" class="card-image">
+                            <span class="card-badge ${statusClass}">${statusText}</span>
+                        </div>
+                        <div class="card-content">
+                            <h3 class="card-title">${plantName}</h3>
+                            <div class="card-info">
+                                <div class="card-info-item">
+                                    <i class="fas fa-tag"></i>
+                                    <span>${plantType}</span>
+                                </div>
+                                <div class="card-info-item">
+                                    <i class="fas fa-user"></i>
+                                    <span>Donador: ${donatorName}</span>
+                                </div>
+                            </div>
+                            ${actionButton ? `<div class="card-actions">${actionButton}</div>` : ''}
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        async function init() {
+            const userId = await loadUserInfo();
+            
+            if (userId) {
+                await Promise.all([
+                    loadDonatedPlants(userId),
+                    loadAdoptionRequests(userId)
+                ]);
+            }
+        }
+
+        init();
+    </script>
+</body>
+</html>

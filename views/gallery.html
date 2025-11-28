@@ -1,0 +1,1079 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folium - Galería de Plantas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+        background: #fafafa;
+        color: #1a1a1a;
+        font-weight: 400;
+        letter-spacing: 0.2px;
+    }
+
+    /* Header */
+    .header {
+        background: #ffffff;
+        color: #1a1a1a;
+        padding: 20px 40px;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 1000;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+        border-bottom: 1px solid #e8e8e8;
+    }
+
+    .header-content {
+        max-width: 1400px;
+        margin: 0 auto;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 30px;
+    }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        color: #1a1a1a;
+        letter-spacing: 0.5px;
+    }
+
+    .logo i {
+        color: #2d6a4f;
+        font-size: 26px;
+    }
+
+    .search-container {
+        flex: 1;
+        max-width: 480px;
+        position: relative;
+    }
+
+    .search-container input {
+        width: 100%;
+        padding: 12px 45px 12px 20px;
+        border: 1px solid #e0e0e0;
+        border-radius: 24px;
+        font-size: 14px;
+        font-weight: 400;
+        background: #f5f5f5;
+        color: #1a1a1a;
+        transition: all 0.3s ease;
+    }
+
+    .search-container input::placeholder {
+        color: #999999;
+        font-weight: 400;
+    }
+
+    .search-container input:focus {
+        outline: none;
+        background: #ffffff;
+        border-color: #c0c0c0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+    }
+
+    .search-container i {
+        position: absolute;
+        right: 18px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #999999;
+        font-size: 14px;
+    }
+
+    .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+    }
+
+    .header-btn {
+        padding: 10px 20px;
+        border: 1px solid #e0e0e0;
+        background: #ffffff;
+        color: #1a1a1a;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-decoration: none;
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        white-space: nowrap;
+    }
+
+    .header-btn:hover {
+        background: #f8f8f8;
+        border-color: #c0c0c0;
+    }
+
+    .header-btn.logout {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: #ffffff;
+    }
+
+    .header-btn.logout:hover {
+        background: #2d2d2d;
+        border-color: #2d2d2d;
+    }
+
+    /* Main Content */
+    .main-content {
+        margin-top: 90px;
+        padding: 30px 40px;
+        max-width: 1400px;
+        margin-left: auto;
+        margin-right: auto;
+    }
+
+    /* Filter Tabs */
+    .filter-tabs {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 35px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .filter-tab {
+        padding: 10px 24px;
+        border: 1px solid #e0e0e0;
+        background: #ffffff;
+        color: #666666;
+        border-radius: 24px;
+        font-size: 14px;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        white-space: nowrap;
+    }
+
+    .filter-tab:hover {
+        background: #f5f5f5;
+        color: #1a1a1a;
+    }
+
+    .filter-tab.active {
+        background: #1a1a1a;
+        border-color: #1a1a1a;
+        color: #ffffff;
+    }
+
+    /* Plant Grid - Estilo Pinterest (Masonry) */
+    .plant-grid {
+        column-count: 5;
+        column-gap: 16px;
+        margin-bottom: 50px;
+    }
+
+    @media (max-width: 1400px) {
+        .plant-grid {
+            column-count: 4;
+        }
+    }
+
+    @media (max-width: 1100px) {
+        .plant-grid {
+            column-count: 3;
+        }
+    }
+
+    @media (max-width: 800px) {
+        .plant-grid {
+            column-count: 2;
+        }
+    }
+
+    @media (max-width: 500px) {
+        .plant-grid {
+            column-count: 1;
+        }
+    }
+
+    .plant-card {
+        background: #ffffff;
+        border-radius: 12px;
+        overflow: hidden;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        position: relative;
+        border: 1px solid #e8e8e8;
+        margin-bottom: 16px;
+        break-inside: avoid;
+        display: inline-block;
+        width: 100%;
+    }
+
+    .plant-card:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    }
+
+    .plant-card-image {
+        width: 100%;
+        height: auto;
+        min-height: 150px;
+        max-height: 380px;
+        object-fit: cover;
+        position: relative;
+        display: block;
+    }
+
+    /* Variaciones de altura para efecto Pinterest - Más variedad */
+    .plant-card:nth-child(6n+1) .plant-card-image {
+        min-height: 200px;
+        max-height: 280px;
+    }
+
+    .plant-card:nth-child(6n+2) .plant-card-image {
+        min-height: 240px;
+        max-height: 340px;
+    }
+
+    .plant-card:nth-child(6n+3) .plant-card-image {
+        min-height: 180px;
+        max-height: 260px;
+    }
+
+    .plant-card:nth-child(6n+4) .plant-card-image {
+        min-height: 260px;
+        max-height: 360px;
+    }
+
+    .plant-card:nth-child(6n+5) .plant-card-image {
+        min-height: 190px;
+        max-height: 270px;
+    }
+
+    .plant-card:nth-child(6n) .plant-card-image {
+        min-height: 220px;
+        max-height: 320px;
+    }
+
+    .plant-card-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+
+    .plant-card:hover .plant-card-overlay {
+        opacity: 1;
+    }
+
+    .status-badge {
+        background: #ffffff;
+        color: #1a1a1a;
+        padding: 8px 18px;
+        border-radius: 20px;
+        font-size: 11px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.8px;
+    }
+
+    .status-badge.adopted {
+        background: #e0e0e0;
+        color: #666666;
+    }
+
+    .plant-card-content {
+        padding: 14px 16px;
+        background: #ffffff;
+    }
+
+    .plant-card-title {
+        font-size: 15px;
+        font-weight: 600;
+        margin-bottom: 6px;
+        color: #1a1a1a;
+        letter-spacing: 0.1px;
+    }
+    
+    .plant-card-author {
+        font-size: 12px;
+        color: #777777;
+        margin-bottom: 8px;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-weight: 400;
+    }
+
+    .plant-card-author i {
+        color: #2d6a4f;
+        font-size: 12px;
+    }
+
+    .plant-card-type {
+        font-size: 12px;
+        color: #888888;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        margin-bottom: 0;
+        font-weight: 400;
+    }
+
+    .modal-description-text {
+        font-size: 16px;
+        color: #4a4a4a;
+        line-height: 1.7;
+        font-weight: 400;
+    }
+
+    /* Floating Add Button */
+    .fab {
+        position: fixed;
+        bottom: 32px;
+        right: 32px;
+        width: 56px;
+        height: 56px;
+        background: #1a1a1a;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #ffffff;
+        font-size: 24px;
+        cursor: pointer;
+        box-shadow: 0 4px 16px rgba(0, 0, 0, 0.2);
+        transition: all 0.3s ease;
+        text-decoration: none;
+        z-index: 999;
+    }
+
+    .fab:hover {
+        transform: scale(1.05);
+        box-shadow: 0 6px 20px rgba(0, 0, 0, 0.25);
+        background: #2d2d2d;
+    }
+
+    /* Modal */
+    .modal {
+        display: none;
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.65);
+        z-index: 2000;
+        overflow-y: auto;
+        padding: 40px 20px;
+    }
+
+    .modal.active {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+
+    .modal-content {
+        background: #ffffff;
+        border-radius: 16px;
+        max-width: 800px;
+        width: 100%;
+        max-height: 90vh;
+        overflow-y: auto;
+        position: relative;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+    }
+
+    .modal-close {
+        position: absolute;
+        top: 20px;
+        right: 20px;
+        background: rgba(0, 0, 0, 0.6);
+        border: none;
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        cursor: pointer;
+        font-size: 18px;
+        color: #ffffff;
+        transition: all 0.3s ease;
+        z-index: 10;
+    }
+
+    .modal-close:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: rotate(90deg);
+    }
+
+    .modal-image {
+        width: 100%;
+        height: auto;
+        max-height: 400px;
+        object-fit: cover;
+        border-radius: 16px 16px 0 0;
+    }
+
+    .modal-body {
+        padding: 40px;
+    }
+
+    .modal-title {
+        font-size: 32px;
+        font-weight: 600;
+        margin-bottom: 10px;
+        color: #1a1a1a;
+        letter-spacing: 0.2px;
+    }
+
+    .modal-type {
+        font-size: 15px;
+        color: #2d6a4f;
+        margin-bottom: 24px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+    }
+
+    .modal-section {
+        margin-bottom: 32px;
+    }
+
+    .modal-section-title {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 16px;
+        color: #1a1a1a;
+        display: flex;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .modal-section-title i {
+        color: #2d6a4f;
+        font-size: 18px;
+    }
+
+    .care-details {
+        background: #f8f8f8;
+        padding: 20px;
+        border-radius: 12px;
+        line-height: 1.8;
+        color: #4a4a4a;
+        border: 1px solid #eeeeee;
+    }
+
+    .care-item {
+        display: flex;
+        gap: 16px;
+        margin-bottom: 16px;
+    }
+
+    .care-item:last-child {
+        margin-bottom: 0;
+    }
+
+    .care-icon {
+        width: 40px;
+        height: 40px;
+        background: #ffffff;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #2d6a4f;
+        flex-shrink: 0;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.06);
+    }
+
+    .care-text {
+        flex: 1;
+    }
+
+    .care-label {
+        font-weight: 600;
+        color: #1a1a1a;
+        margin-bottom: 4px;
+        font-size: 14px;
+    }
+
+    .care-description {
+        font-size: 14px;
+        color: #666666;
+        font-weight: 400;
+        line-height: 1.5;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 12px;
+        margin-top: 32px;
+    }
+
+    .btn {
+        flex: 1;
+        padding: 14px 28px;
+        border: none;
+        border-radius: 8px;
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .btn-primary {
+        background: #1a1a1a;
+        color: #ffffff;
+    }
+
+    .btn-primary:hover:not(:disabled) {
+        background: #2d2d2d;
+        transform: translateY(-1px);
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+    }
+
+    .btn-primary:disabled {
+        background: #c0c0c0;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: #f5f5f5;
+        color: #666666;
+        border: 1px solid #e0e0e0;
+    }
+
+    .btn-secondary:hover {
+        background: #e8e8e8;
+        transform: translateY(-1px);
+    }
+
+    /* Loading & Empty States */
+    .loading {
+        text-align: center;
+        padding: 80px 20px;
+        font-size: 16px;
+        color: #999999;
+        column-span: all;
+        font-weight: 400;
+    }
+
+    .loading i {
+        font-size: 48px;
+        color: #2d6a4f;
+        margin-bottom: 20px;
+        animation: spin 1s linear infinite;
+    }
+
+    @keyframes spin {
+        100% { transform: rotate(360deg); }
+    }
+
+    .empty-state {
+        text-align: center;
+        padding: 100px 20px;
+        column-span: all;
+    }
+
+    .empty-state i {
+        font-size: 64px;
+        color: #e0e0e0;
+        margin-bottom: 24px;
+    }
+
+    .empty-state h3 {
+        font-size: 24px;
+        color: #666666;
+        margin-bottom: 10px;
+        font-weight: 600;
+    }
+
+    .empty-state p {
+        color: #999999;
+        font-weight: 400;
+        font-size: 15px;
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .header-content {
+            flex-wrap: wrap;
+        }
+
+        .search-container {
+            order: 3;
+            max-width: 100%;
+            flex: 1 1 100%;
+        }
+
+        .header-actions {
+            flex-wrap: wrap;
+        }
+
+        .modal-body {
+            padding: 30px 20px;
+        }
+
+        .modal-image {
+            max-height: 300px;
+        }
+    }
+</style>
+```
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+<a href="gallery.html" class="logo">
+    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <path d="M16 2C16 2 8 10 8 18C8 22.4183 11.5817 26 16 26C20.4183 26 24 22.4183 24 18C24 10 16 2 16 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        <path d="M16 12V26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+        <path d="M12 16C12 16 14 18 16 18C18 18 20 16 20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+    </svg>
+    <span>Folium</span>
+</a>
+
+            <div class="search-container">
+                <input type="text" id="searchInput" placeholder="Buscar plantas por nombre o especie...">
+                <i class="fas fa-search"></i>
+            </div>
+
+            <div class="header-actions">
+                <a href="profile.html" class="header-btn">
+                    <i class="fas fa-user"></i>
+                    <span>Mi Perfil</span>
+                </a>
+                <a href="requests.html" class="header-btn">
+                    <i class="fas fa-handshake"></i>
+                    <span>Solicitudes</span>
+                </a>
+                <button class="header-btn logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Salir</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="filter-tabs" id="filterTabs">
+            <button class="filter-tab active" data-type="Todas">Todas</button>
+            <button class="filter-tab" data-type="Interior">Interior</button>
+            <button class="filter-tab" data-type="Exterior">Exterior</button>
+            <button class="filter-tab" data-type="Suculentas">Suculentas</button>
+            <button class="filter-tab" data-type="Cactus">Cactus</button>
+        </div>
+
+        <div id="plantGrid" class="plant-grid">
+            <div class="loading">
+                <div><i class="fas fa-spinner"></i></div>
+                <div>Cargando plantas...</div>
+            </div>
+        </div>
+    </main>
+
+    <a href="PlantListView.html" class="fab" title="Poner en adopción"> 
+        <i class="fas fa-plus"></i>
+    </a>
+
+    <div id="plantModal" class="modal">
+        <div class="modal-content">
+            <button class="modal-close" id="modalClose">
+                <i class="fas fa-times"></i>
+            </button>
+            <img id="modalImage" class="modal-image" src="" alt="Imagen de la planta"> 
+            <div class="modal-body">
+                <h2 id="modalTitle" class="modal-title"></h2>
+                <div id="modalType" class="modal-type"></div>
+
+                <div class="modal-section">
+                    <div class="modal-section-title">
+                        <i class="fas fa-info-circle"></i>
+                        Descripción
+                    </div>
+                    <p id="modalDescription" class="modal-description-text"></p>
+                </div>
+                <div class="modal-section">
+                    <div class="modal-section-title">
+                        <i class="fas fa-leaf"></i>
+                        Guía de Cuidados
+                    </div>
+                    <div id="modalCareDetails" class="care-details"></div>
+                </div>
+                
+                <div class="modal-actions">
+                    <button class="btn btn-secondary" id="modalCancelBtn">Cerrar</button>
+                    <button class="btn btn-primary" id="modalAdoptBtn">Solicitar Adopción</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+<script>
+    // Configuración inicial y seguridad
+    const API_BASE_URL = 'https://raiden-eruptible-ruthie.ngrok-free.dev';
+    const token = localStorage.getItem('token');
+    
+    // ** La lógica de URL del JS ya estaba correcta **
+    const IMAGE_BASE_URL = 'https://raiden-eruptible-ruthie.ngrok-free.dev/'; 
+    const FALLBACK_IMAGE_URL = IMAGE_BASE_URL + 'uploads/default_plant.png'; 
+
+    if (!token) {
+        window.location.href = '../index.html';
+    }
+
+    axios.defaults.baseURL = API_BASE_URL;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    // Variables globales
+    let allPlants = [];
+    let currentFilter = 'Todas';
+    let currentSearchTerm = '';
+    let selectedPlant = null;
+
+    // Referencias DOM
+    const plantGrid = document.getElementById('plantGrid');
+    const searchInput = document.getElementById('searchInput');
+    const filterTabs = document.querySelectorAll('.filter-tab');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const modal = document.getElementById('plantModal');
+    const modalClose = document.getElementById('modalClose');
+    const modalCancelBtn = document.getElementById('modalCancelBtn');
+    const modalAdoptBtn = document.getElementById('modalAdoptBtn');
+    const modalDescription = document.getElementById('modalDescription'); 
+    
+    // Enlace FAB
+    const fabLink = document.querySelector('.fab');
+    if (fabLink) {
+        fabLink.href = 'PlantListView.html';
+    }
+
+
+    // --- 1. Eventos de Navegación y Sesión ---
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '../index.html'; 
+    });
+    
+    // Delegación de Eventos para el Grid: Manejo robusto del clic
+    plantGrid.addEventListener('click', (e) => {
+        const card = e.target.closest('.plant-card');
+        if (card) {
+            const plantId = card.getAttribute('data-id');
+            
+            if (plantId) {
+                openPlantModal(plantId);
+            } else {
+                console.error("Error FATAL: No se encontró 'data-id' en la tarjeta. La planta no tiene ID asignado.");
+                alert("Error al cargar la planta: ID de recurso faltante.");
+            }
+        }
+    });
+
+    // --- 2. Funciones de Carga y Renderizado ---
+    async function loadPlants() {
+        try {
+            const response = await axios.get('/plants');
+            allPlants = response.data;
+            filterPlants();
+        } catch (error) {
+            console.error('Error al cargar plantas:', error);
+            plantGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>Error de conexión</h3>
+                    <p>No se pudieron cargar las plantas. Asegúrate de que el backend esté corriendo y la ruta /api/plants funcione.</p>
+                </div>
+            `;
+        }
+    }
+
+    /**
+     * Renderiza las tarjetas de plantas en el grid.
+     */
+    function renderPlants(plantsToRender) {
+        const plants = plantsToRender || allPlants;
+        
+        if (plants.length === 0) {
+            plantGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-seedling"></i>
+                    <h3>No se encontraron plantas</h3>
+                    <p>Intenta con otros filtros o términos de búsqueda</p>
+                </div>
+            `;
+            return;
+        }
+        
+        plantGrid.innerHTML = plants.map(plant => {
+            if (!plant.id) {
+                console.warn(`Planta omitida porque no tiene ID: ${plant.name || 'Nombre Desconocido'}`);
+                return ''; 
+            }
+
+            const statusText = (plant.status || 'AVAILABLE').toUpperCase();
+            const isAdopted = statusText === 'ADOPTED' || statusText === 'PENDING';
+            
+            // Lógica de la URL
+            let imageUrl;
+            if (plant.image_url) {
+                imageUrl = plant.image_url.startsWith('http') ? plant.image_url : IMAGE_BASE_URL + plant.image_url; 
+            } else {
+                imageUrl = FALLBACK_IMAGE_URL; 
+            }
+            
+            const authorName = plant.Donator && plant.Donator.name ? plant.Donator.name : 'Anónimo'; 
+            const plantType = (plant.Tags && plant.Tags[0] && plant.Tags[0].name) ? plant.Tags[0].name : 'Sin Categoría';
+
+
+            return `
+            <div class="plant-card" data-id="${plant.id}"> 
+                <div style="position: relative;">
+                    <img src="${imageUrl}" 
+                         alt="${plant.name}" 
+                         class="plant-card-image">
+                    <div class="plant-card-overlay">
+                        <span class="status-badge ${isAdopted ? 'adopted' : ''}">
+                            ${statusText.replace('AVAILABLE', 'En Adopción').replace('PENDING', 'Pendiente').replace('ADOPTED', 'Adoptada')}
+                        </span>
+                    </div>
+                </div>
+                <div class="plant-card-content">
+                    <h3 class="plant-card-title">${plant.name}</h3>
+                    
+                    <div class="plant-card-author">
+                        <i class="fas fa-hand-holding-heart"></i>
+                        Ofrecida por: <strong>${authorName}</strong>
+                    </div>
+
+                    <div class="plant-card-type">
+                        <i class="fas fa-tag"></i>
+                        ${plantType}
+                    </div>
+                </div>
+            </div>
+            `;
+        }).join('');
+    }
+
+    function filterPlants() {
+        const filtered = allPlants.filter(plant => {
+            // Obtener el tipo de tag principal
+            const plantType = (plant.Tags && plant.Tags[0] && plant.Tags[0].name) ? plant.Tags[0].name : 'Sin Categoría';
+
+            const matchesType = currentFilter === 'Todas' || plantType === currentFilter;
+            const matchesSearch = currentSearchTerm === '' || 
+                plant.name.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
+                plantType.toLowerCase().includes(currentSearchTerm.toLowerCase()) ||
+                (plant.location && plant.location.toLowerCase().includes(currentSearchTerm.toLowerCase()));
+            
+            return matchesType && matchesSearch;
+        });
+        renderPlants(filtered);
+    }
+
+    filterTabs.forEach(tab => {
+        tab.addEventListener('click', () => {
+            filterTabs.forEach(t => t.classList.remove('active'));
+            tab.classList.add('active');
+            currentFilter = tab.getAttribute('data-type');
+            filterPlants();
+        });
+    });
+
+    searchInput.addEventListener('input', (e) => {
+        currentSearchTerm = e.target.value.trim();
+        filterPlants();
+    });
+
+    // --- 3. Lógica del Modal (GET /api/plants/:id) ---
+    async function openPlantModal(plantId) {
+        modal.classList.remove('active');
+        modalAdoptBtn.textContent = 'Cargando...';
+        modalAdoptBtn.disabled = true;
+
+        if (!plantId) {
+            closeModal();
+            return;
+        }
+
+        try {
+            const response = await axios.get(`/plants/${plantId}`);
+            selectedPlant = response.data; 
+            
+            // Lógica de la URL para el modal
+            let modalImageUrl;
+            if (selectedPlant.image_url) {
+                modalImageUrl = selectedPlant.image_url.startsWith('http') ? selectedPlant.image_url : IMAGE_BASE_URL + selectedPlant.image_url; 
+            } else {
+                modalImageUrl = IMAGE_BASE_URL + 'uploads/default_large_plant.png'; // Usar una imagen de fallback local
+            }
+            
+            // Llenar modal con datos
+            document.getElementById('modalImage').src = modalImageUrl;
+            document.getElementById('modalTitle').textContent = selectedPlant.name;
+            
+            // Determinar el tipo (Tag)
+            const plantType = (selectedPlant.Tags && selectedPlant.Tags[0] && selectedPlant.Tags[0].name) ? selectedPlant.Tags[0].name : 'Sin Categoría';
+            document.getElementById('modalType').innerHTML = `<i class="fas fa-tag"></i> ${plantType}`;
+
+            // Descripción
+            modalDescription.textContent = selectedPlant.description || 'No hay descripción disponible para esta planta.';
+
+
+            // Manejo de PlantCare (asumiendo que viene en plant.PlantCare)
+            const careDetails = selectedPlant.PlantCare; 
+            renderCareDetails(careDetails);
+
+            // Configurar botón de adopción
+            const status = (selectedPlant.status || 'AVAILABLE').toUpperCase();
+            
+            if (status === 'ADOPTED' || status === 'PENDING') {
+                modalAdoptBtn.disabled = true;
+                modalAdoptBtn.textContent = (status === 'ADOPTED') ? 'Adoptada' : 'Pendiente';
+                modalAdoptBtn.classList.remove('btn-primary');
+                modalAdoptBtn.classList.add('btn-secondary');
+            } else {
+                modalAdoptBtn.disabled = false;
+                modalAdoptBtn.textContent = 'Solicitar Adopción';
+                modalAdoptBtn.classList.add('btn-primary');
+                modalAdoptBtn.classList.remove('btn-secondary');
+            }
+
+            modal.classList.add('active');
+        } catch (error) {
+            console.error('Error al cargar detalles de la planta:', error);
+            
+            const statusText = error.response && error.response.status === 404 ? 
+                               'Planta no encontrada en el servidor.' : 
+                               'Error de conexión o ID inválido.';
+
+            alert(`Error al cargar los detalles de la planta (ID: ${plantId}). ${statusText}`);
+            closeModal();
+        }
+    }
+
+    /**
+     * Renderiza los detalles de cuidado en el modal.
+     */
+    function renderCareDetails(careDetails) {
+        const careContainer = document.getElementById('modalCareDetails');
+        
+        if (!careDetails) {
+            careContainer.innerHTML = '<p>No hay información de cuidados disponible.</p>';
+            return;
+        }
+
+        const careItems = [
+            { icon: 'fa-sun', label: 'Luz', value: careDetails.light, unit: '' }, 
+            { icon: 'fa-tint', label: 'Riego', value: careDetails.watering, unit: '' }, 
+            { icon: 'fa-cloud', label: 'Humedad', value: careDetails.humidity, unit: '' },
+            { icon: 'fa-thermometer-half', label: 'Temperatura', value: careDetails.temperature, unit: '°C' },
+            { icon: 'fa-syringe', label: 'Fertilizante', value: careDetails.fertilizer, unit: '' }
+        ].filter(item => item.value);
+
+        if (careItems.length === 0) {
+            careContainer.innerHTML = '<p>No hay información de cuidados detallada disponible.</p>';
+            return;
+        }
+
+        careContainer.innerHTML = careItems.map(item => `
+            <div class="care-item">
+                <div class="care-icon">
+                    <i class="fas ${item.icon}"></i>
+                </div>
+                <div class="care-text">
+                    <div class="care-label">${item.label}</div>
+                    <div class="care-description">${item.value} ${item.unit}</div>
+                </div>
+            </div>
+        `).join('');
+    }
+
+    // Cierre de modal
+    function closeModal() {
+        modal.classList.remove('active');
+        selectedPlant = null;         
+    }
+
+    modalClose.addEventListener('click', closeModal);
+    modalCancelBtn.addEventListener('click', closeModal);
+    modal.addEventListener('click', (e) => {
+        if (e.target === modal) {
+            closeModal();
+        }
+    });
+
+    // --- 4. Acción de Solicitud de Adopción (POST /api/requests) ---
+    modalAdoptBtn.addEventListener('click', async () => {
+        if (!selectedPlant || modalAdoptBtn.disabled) return;
+
+        try {
+            modalAdoptBtn.disabled = true;
+            modalAdoptBtn.textContent = 'Enviando Solicitud...';
+            
+            await axios.post('/requests', {
+                plantId: selectedPlant.id 
+            });
+
+            alert('¡Solicitud de adopción enviada con éxito! Revisa el estado en "Mis Solicitudes".');
+            
+            // Actualizar botón
+            modalAdoptBtn.textContent = 'Solicitud Enviada';
+            modalAdoptBtn.classList.remove('btn-primary');
+            modalAdoptBtn.classList.add('btn-secondary');
+            
+            setTimeout(() => {
+                closeModal();
+                loadPlants(); // Recargar la lista para actualizar el estado visual
+            }, 1500);
+
+        } catch (error) {
+            console.error('Error al solicitar adopción:', error);
+            
+            const errorMessage = error.response?.data?.message || 'Error al enviar la solicitud. Verifica que no hayas solicitado esta planta previamente.';
+            alert(errorMessage);
+            
+            modalAdoptBtn.disabled = false;
+            modalAdoptBtn.textContent = 'Solicitar Adopción';
+            modalAdoptBtn.classList.add('btn-primary');
+            modalAdoptBtn.classList.remove('btn-secondary');
+        }
+    });
+
+    // --- 5. Inicialización ---
+    loadPlants();
+</script>
+</body>
+</html>

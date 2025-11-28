@@ -1,0 +1,610 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folium - Dale una segunda vida a tus plantas</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            height: 100vh;
+            overflow: hidden;
+        }
+
+        .container {
+            display: flex;
+            height: 100vh;
+        }
+
+        /* Columna Izquierda - Landing */
+        .left-column {
+            flex: 1;
+            background: #0a0a0a;
+            color: white;
+            padding: 60px;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between;
+        }
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        color: #fff;
+        letter-spacing: 0.5px;
+    }
+
+    .logo i {
+        color: #fff;
+        font-size: 40px;
+    }
+
+        .main-content h1 {
+            font-size: 48px;
+            line-height: 1.2;
+            margin-bottom: 24px;
+            font-weight: 600;
+            letter-spacing: -0.5px;
+        }
+
+        .subtitle {
+            font-size: 17px;
+            color: #b0b0b0;
+            margin-bottom: 60px;
+            line-height: 1.6;
+            font-weight: 300;
+        }
+
+        .features-title {
+            font-size: 12px;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #666666;
+            margin-bottom: 30px;
+            font-weight: 600;
+        }
+
+        .feature-list {
+            display: flex;
+            flex-direction: column;
+            gap: 24px;
+        }
+
+        .feature-item {
+            display: flex;
+            align-items: flex-start;
+            gap: 16px;
+        }
+
+        .feature-icon {
+            width: 44px;
+            height: 44px;
+            background: rgba(45, 106, 79, 0.15);
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #2d6a4f;
+            font-size: 18px;
+            flex-shrink: 0;
+        }
+
+        .feature-content h3 {
+            font-size: 16px;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: #ffffff;
+        }
+
+        .feature-content p {
+            font-size: 14px;
+            color: #a0a0a0;
+            line-height: 1.5;
+            font-weight: 300;
+        }
+
+        /* Columna Derecha - Autenticación */
+        .right-column {
+            flex: 0 0 480px;
+            background: #ffffff;
+            padding: 60px 50px;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            overflow-y: auto;
+        }
+
+        .auth-container {
+            width: 100%;
+            max-width: 380px;
+            margin: 0 auto;
+        }
+
+        .welcome-title {
+            font-size: 32px;
+            font-weight: 600;
+            margin-bottom: 10px;
+            color: #0a0a0a;
+            letter-spacing: -0.5px;
+        }
+
+        .welcome-subtitle {
+            font-size: 15px;
+            color: #666666;
+            margin-bottom: 40px;
+            font-weight: 400;
+        }
+
+        .form-section {
+            display: none;
+        }
+
+        .form-section.active {
+            display: block;
+        }
+
+        .form-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #999999;
+            margin-bottom: 10px;
+            display: block;
+            font-weight: 600;
+        }
+
+        .input-group {
+            margin-bottom: 24px;
+        }
+
+        .input-group label {
+            display: block;
+            font-size: 14px;
+            color: #333333;
+            margin-bottom: 8px;
+            font-weight: 500;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 14px 16px;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 15px;
+            transition: all 0.3s ease;
+            font-family: 'Inter', sans-serif;
+            background: #fafafa;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #2d6a4f;
+            background: #ffffff;
+            box-shadow: 0 0 0 3px rgba(45, 106, 79, 0.1);
+        }
+
+        .forgot-password {
+            text-align: right;
+            margin-bottom: 30px;
+        }
+
+        .forgot-password a {
+            color: #666666;
+            font-size: 13px;
+            text-decoration: none;
+            font-weight: 500;
+        }
+
+        .forgot-password a:hover {
+            color: #2d6a4f;
+        }
+
+        .btn-primary {
+            width: 100%;
+            padding: 16px;
+            background: #0a0a0a;
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .btn-primary:hover {
+            background: #1a1a1a;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(10, 10, 10, 0.2);
+        }
+
+        .btn-primary:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+            box-shadow: none;
+        }
+
+        .toggle-auth {
+            text-align: center;
+            margin-top: 30px;
+            font-size: 14px;
+            color: #666666;
+        }
+
+        .toggle-auth a {
+            color: #2d6a4f;
+            text-decoration: none;
+            font-weight: 600;
+            cursor: pointer;
+        }
+
+        .toggle-auth a:hover {
+            text-decoration: underline;
+        }
+
+        .error-message {
+            background: #fff5f5;
+            color: #c53030;
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 24px;
+            display: none;
+            border-left: 3px solid #c53030;
+            font-weight: 500;
+        }
+
+        .error-message.show {
+            display: block;
+        }
+
+        .success-message {
+            background: #f0fdf4;
+            color: #166534;
+            padding: 14px 16px;
+            border-radius: 8px;
+            font-size: 14px;
+            margin-bottom: 24px;
+            display: none;
+            border-left: 3px solid #16a34a;
+            font-weight: 500;
+        }
+
+        .success-message.show {
+            display: block;
+        }
+
+        @media (max-width: 968px) {
+            .container {
+                flex-direction: column;
+            }
+
+            .left-column {
+                padding: 40px;
+            }
+
+            .right-column {
+                flex: 1;
+                padding: 40px 30px;
+            }
+
+            .main-content h1 {
+                font-size: 36px;
+            }
+
+            .logo {
+                font-size: 28px;
+            }
+
+            .logo svg {
+                width: 28px;
+                height: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Columna Izquierda - Landing -->
+        <div class="left-column">
+            <div>
+                <div class="logo">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16 2C16 2 8 10 8 18C8 22.4183 11.5817 26 16 26C20.4183 26 24 22.4183 24 18C24 10 16 2 16 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                        <path d="M16 12V26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                        <path d="M12 16C12 16 14 18 16 18C18 18 20 16 20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    </svg>
+                    <span>Folium</span>
+                </div>
+
+                <div class="main-content">
+                    <h1>Dale una segunda vida a tus plantas</h1>
+                    <p class="subtitle">Una plataforma donde cada planta encuentra el hogar que merece</p>
+
+                    <div class="features-title">CÓMO FUNCIONA</div>
+
+                    <div class="feature-list">
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h3>Explora la galería</h3>
+                                <p>Descubre plantas disponibles cerca de ti</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-heart"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h3>Encuentra tu planta ideal</h3>
+                                <p>Filtra por tipo y revisa las fotos de cada planta</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-comments"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h3>Contacta al donante</h3>
+                                <p>Ponte en contacto para coordinar</p>
+                            </div>
+                        </div>
+
+                        <div class="feature-item">
+                            <div class="feature-icon">
+                                <i class="fas fa-leaf"></i>
+                            </div>
+                            <div class="feature-content">
+                                <h3>Dale un nuevo hogar</h3>
+                                <p>Recibe tu planta y comienza su cuidado</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Columna Derecha - Autenticación -->
+        <div class="right-column">
+            <div class="auth-container">
+                <!-- Mensajes -->
+                <div id="errorMessage" class="error-message"></div>
+                <div id="successMessage" class="success-message"></div>
+
+                <!-- Formulario de Login -->
+                <div id="loginSection" class="form-section active">
+                    <h2 class="welcome-title">Bienvenido de vuelta</h2>
+                    <p class="welcome-subtitle">Inicia sesión para continuar</p>
+
+                    <form id="loginForm">
+                        <span class="form-label">CORREO ELECTRÓNICO</span>
+                        <div class="input-group">
+                            <input type="email" id="loginEmail" placeholder="tu@email.com" required>
+                        </div>
+
+                        <span class="form-label">CONTRASEÑA</span>
+                        <div class="input-group">
+                            <input type="password" id="loginPassword" placeholder="••••••••" required>
+                        </div>
+
+                        <div class="forgot-password">
+                            <a href="#">¿Olvidaste tu contraseña?</a>
+                        </div>
+
+                        <button type="submit" class="btn-primary">Iniciar Sesión</button>
+                    </form>
+
+                    <div class="toggle-auth">
+                        ¿No tienes cuenta? <a id="showRegister">Crear Cuenta</a>
+                    </div>
+                </div>
+
+                <!-- Formulario de Registro -->
+                <div id="registerSection" class="form-section">
+                    <h2 class="welcome-title">Crear cuenta</h2>
+                    <p class="welcome-subtitle">Únete a nuestra comunidad</p>
+
+                    <form id="registerForm">
+                        <span class="form-label">INFORMACIÓN DE REGISTRO</span>
+                        
+                        <div class="input-group">
+                            <label>Nombre completo</label>
+                            <input type="text" id="registerName" placeholder="Tu nombre" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Correo electrónico</label>
+                            <input type="email" id="registerEmail" placeholder="tu@email.com" required>
+                        </div>
+
+                        <div class="input-group">
+                            <label>Contraseña</label>
+                            <input type="password" id="registerPassword" placeholder="Mínimo 6 caracteres" required minlength="6">
+                        </div>
+
+                        <button type="submit" class="btn-primary">Crear Cuenta</button>
+                    </form>
+
+                    <div class="toggle-auth">
+                        ¿Ya tienes cuenta? <a id="showLogin">Iniciar Sesión</a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Base URL de la API (asumiendo que está configurada globalmente)
+        const API_BASE_URL = window.API_BASE_URL || 'https://raiden-eruptible-ruthie.ngrok-free.dev';
+
+        // Referencias a elementos del DOM
+        const loginSection = document.getElementById('loginSection');
+        const registerSection = document.getElementById('registerSection');
+        const showRegisterBtn = document.getElementById('showRegister');
+        const showLoginBtn = document.getElementById('showLogin');
+        const loginForm = document.getElementById('loginForm');
+        const registerForm = document.getElementById('registerForm');
+        const errorMessage = document.getElementById('errorMessage');
+        const successMessage = document.getElementById('successMessage');
+
+        // Alternar entre formularios
+        showRegisterBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            loginSection.classList.remove('active');
+            registerSection.classList.add('active');
+            clearMessages();
+        });
+
+        showLoginBtn.addEventListener('click', (e) => {
+            e.preventDefault();
+            registerSection.classList.remove('active');
+            loginSection.classList.add('active');
+            clearMessages();
+        });
+
+        // Función para mostrar mensajes de error
+        function showError(message) {
+            errorMessage.textContent = message;
+            errorMessage.classList.add('show');
+            successMessage.classList.remove('show');
+        }
+
+        // Función para mostrar mensajes de éxito
+        function showSuccess(message) {
+            successMessage.textContent = message;
+            successMessage.classList.add('show');
+            errorMessage.classList.remove('show');
+        }
+
+        // Función para limpiar mensajes
+        function clearMessages() {
+            errorMessage.classList.remove('show');
+            successMessage.classList.remove('show');
+        }
+
+        // Manejo del formulario de Login
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+
+            const submitBtn = loginForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Iniciando sesión...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/auth/login`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Error al iniciar sesión');
+                }
+
+                // Guardar token en localStorage
+                localStorage.setItem('token', data.token);
+
+                // Mostrar mensaje de éxito breve
+                showSuccess('¡Inicio de sesión exitoso! Redirigiendo...');
+
+                // Redirigir a la galería
+                setTimeout(() => {
+                    window.location.href = './views/gallery.html';
+                }, 1000);
+
+            } catch (error) {
+                showError(error.message);
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Iniciar Sesión';
+            }
+        });
+
+        // Manejo del formulario de Registro
+        registerForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            clearMessages();
+
+            const name = document.getElementById('registerName').value.trim();
+            const email = document.getElementById('registerEmail').value.trim();
+            const password = document.getElementById('registerPassword').value;
+
+            const submitBtn = registerForm.querySelector('button[type="submit"]');
+            submitBtn.disabled = true;
+            submitBtn.textContent = 'Creando cuenta...';
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/users`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ name, email, password })
+                });
+
+                const data = await response.json();
+
+                if (!response.ok) {
+                    throw new Error(data.message || 'Error al crear la cuenta');
+                }
+
+                // Mostrar mensaje de éxito
+                showSuccess('¡Cuenta creada exitosamente! Por favor, inicia sesión.');
+
+                // Limpiar formulario
+                registerForm.reset();
+
+                // Cambiar a vista de login después de 2 segundos
+                setTimeout(() => {
+                    registerSection.classList.remove('active');
+                    loginSection.classList.add('active');
+                    clearMessages();
+                }, 2000);
+
+            } catch (error) {
+                showError(error.message);
+            } finally {
+                submitBtn.disabled = false;
+                submitBtn.textContent = 'Crear Cuenta';
+            }
+        });
+
+        // Verificar si ya hay un token guardado
+        window.addEventListener('DOMContentLoaded', () => {
+            const token = localStorage.getItem('token');
+            if (token) {
+                // Si ya hay token, redirigir directamente a la galería
+                window.location.href = './views/gallery.html';
+            }
+        });
+    </script>
+</body>
+</html>

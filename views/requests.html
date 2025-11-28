@@ -1,0 +1,932 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Folium - Mis Solicitudes</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/axios/1.6.0/axios.min.js"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;500;600;700&family=Inter:wght@300;400;500;600&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            background: #fafafa;
+            color: #1a1a1a;
+            font-weight: 400;
+        }
+
+        /* Header */
+        .header {
+            background: #ffffff;
+            color: #1a1a1a;
+            padding: 20px 40px;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            z-index: 1000;
+            box-shadow: 0 1px 3px rgba(0, 0, 0, 0.08);
+            border-bottom: 1px solid #e8e8e8;
+        }
+
+        .header-content {
+            max-width: 1400px;
+            margin: 0 auto;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+    .logo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        font-family: 'Playfair Display', serif;
+        font-size: 28px;
+        font-weight: 600;
+        cursor: pointer;
+        text-decoration: none;
+        color: #1a1a1a;
+        letter-spacing: 0.5px;
+    }
+
+    .logo i {
+        color: #2d6a4f;
+        font-size: 26px;
+    }
+
+    .search-container {
+        flex: 1;
+        max-width: 480px;
+        position: relative;
+    }
+
+        .search-container {
+            flex: 1;
+            max-width: 480px;
+            position: relative;
+        }
+
+        .search-container input {
+            width: 100%;
+            padding: 12px 45px 12px 20px;
+            border: 1px solid #e0e0e0;
+            border-radius: 24px;
+            font-size: 14px;
+            font-weight: 400;
+            background: #f5f5f5;
+            color: #1a1a1a;
+            transition: all 0.3s ease;
+        }
+
+        .search-container input::placeholder {
+            color: #999999;
+            font-weight: 400;
+        }
+
+        .search-container input:focus {
+            outline: none;
+            background: #ffffff;
+            border-color: #c0c0c0;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+        }
+
+        .search-container i {
+            position: absolute;
+            right: 18px;
+            top: 50%;
+            transform: translateY(-50%);
+            color: #999999;
+            font-size: 14px;
+        }
+
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .header-btn {
+            padding: 10px 20px;
+            border: 1px solid #e0e0e0;
+            background: #ffffff;
+            color: #1a1a1a;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            white-space: nowrap;
+        }
+
+        .header-btn:hover {
+            background: #f8f8f8;
+            border-color: #c0c0c0;
+        }
+
+        .header-btn.logout {
+            background: #1a1a1a;
+            border-color: #1a1a1a;
+            color: #ffffff;
+        }
+
+        .header-btn.logout:hover {
+            background: #2d2d2d;
+            border-color: #2d2d2d;
+        }
+
+        /* Main Content */
+        .main-content {
+            margin-top: 90px;
+            padding: 30px 40px;
+            max-width: 1400px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .page-header {
+            margin-bottom: 35px;
+        }
+
+        .page-title {
+            font-size: 36px;
+            font-weight: 600;
+            color: #0a0a0a;
+            margin-bottom: 12px;
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            letter-spacing: -0.5px;
+        }
+
+        .page-title i {
+            color: #2d6a4f;
+        }
+
+        .page-subtitle {
+            font-size: 16px;
+            color: #666666;
+            font-weight: 400;
+        }
+
+        /* Tabs */
+        .tabs-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 35px;
+            border-bottom: 2px solid #e8e8e8;
+            padding-bottom: 0;
+        }
+
+        .tab {
+            padding: 14px 28px;
+            border: none;
+            background: transparent;
+            color: #666666;
+            font-size: 15px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+            border-radius: 8px 8px 0 0;
+        }
+
+        .tab:hover {
+            color: #2d6a4f;
+            background: rgba(45, 106, 79, 0.05);
+        }
+
+        .tab.active {
+            color: #2d6a4f;
+            background: rgba(45, 106, 79, 0.08);
+        }
+
+        .tab.active::after {
+            content: '';
+            position: absolute;
+            bottom: -2px;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: #2d6a4f;
+        }
+
+        .tab-badge {
+            background: #2d6a4f;
+            color: white;
+            padding: 3px 10px;
+            border-radius: 12px;
+            font-size: 12px;
+            margin-left: 8px;
+            font-weight: 600;
+            min-width: 25px;
+            text-align: center;
+        }
+
+        .tab.active .tab-badge {
+            background: #0a0a0a;
+            color: #ffffff;
+        }
+
+        /* Request Cards */
+        .requests-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(360px, 1fr));
+            gap: 24px;
+            margin-bottom: 50px;
+        }
+
+        .request-card {
+            background: #ffffff;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08);
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #f0f0f0;
+        }
+
+        .request-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+        }
+
+        .request-card-header {
+            padding: 20px;
+            border-bottom: 1px solid #f5f5f5;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 15px;
+        }
+
+        .request-card-plant {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            flex: 1;
+        }
+
+        .plant-image-small {
+            width: 60px;
+            height: 60px;
+            border-radius: 10px;
+            object-fit: cover;
+            border: 1px solid #e8e8e8;
+        }
+
+        .plant-info {
+            flex: 1;
+        }
+
+        .plant-name {
+            font-size: 17px;
+            font-weight: 600;
+            color: #0a0a0a;
+            margin-bottom: 6px;
+        }
+
+        .plant-type {
+            font-size: 13px;
+            color: #666666;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+            font-weight: 400;
+        }
+
+        .status-badge {
+            padding: 7px 14px;
+            border-radius: 20px;
+            font-size: 11px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            white-space: nowrap;
+        }
+
+        .status-badge.pending {
+            background: #fff3cd;
+            color: #856404;
+        }
+
+        .status-badge.accepted {
+            background: #d4edda;
+            color: #155724;
+        }
+
+        .status-badge.rejected {
+            background: #f8d7da;
+            color: #721c24;
+        }
+
+        .request-card-body {
+            padding: 20px;
+        }
+
+        .request-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            padding: 14px;
+            background: #fafafa;
+            border-radius: 10px;
+            border: 1px solid #f0f0f0;
+        }
+
+        .request-info i {
+            color: #2d6a4f;
+            font-size: 18px;
+        }
+
+        .request-info-text {
+            flex: 1;
+        }
+
+        .request-info-label {
+            font-size: 12px;
+            color: #999999;
+            margin-bottom: 4px;
+            font-weight: 500;
+        }
+
+        .request-info-value {
+            font-size: 15px;
+            font-weight: 600;
+            color: #0a0a0a;
+        }
+
+        .request-date {
+            font-size: 13px;
+            color: #999999;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            margin-bottom: 16px;
+            font-weight: 400;
+        }
+
+        .request-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 16px;
+        }
+
+        .btn {
+            flex: 1;
+            padding: 13px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
+
+        .btn-accept {
+            background: #0a0a0a;
+            color: white;
+        }
+
+        .btn-accept:hover:not(:disabled) {
+            background: #1a1a1a;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(10, 10, 10, 0.2);
+        }
+
+        .btn-reject {
+            background: #c53030;
+            color: white;
+        }
+
+        .btn-reject:hover:not(:disabled) {
+            background: #a02626;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(197, 48, 48, 0.3);
+        }
+
+        .btn-chat {
+            background: #2d6a4f;
+            color: white;
+        }
+
+        .btn-chat:hover:not(:disabled) {
+            background: #245a42;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(45, 106, 79, 0.3);
+        }
+
+        .btn:disabled {
+            background: #cccccc;
+            cursor: not-allowed;
+            transform: none;
+        }
+
+        /* Loading & Empty States */
+        .loading {
+            text-align: center;
+            padding: 80px 20px;
+            font-size: 16px;
+            color: #999999;
+            grid-column: 1 / -1;
+            font-weight: 400;
+        }
+
+        .loading i {
+            font-size: 48px;
+            color: #2d6a4f;
+            margin-bottom: 20px;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            100% { transform: rotate(360deg); }
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 100px 20px;
+            grid-column: 1 / -1;
+        }
+
+        .empty-state i {
+            font-size: 64px;
+            color: #e0e0e0;
+            margin-bottom: 24px;
+        }
+
+        .empty-state h3 {
+            font-size: 24px;
+            color: #666666;
+            margin-bottom: 10px;
+            font-weight: 600;
+        }
+
+        .empty-state p {
+            color: #999999;
+            font-weight: 400;
+            font-size: 15px;
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .header-content {
+                flex-wrap: wrap;
+            }
+
+            .search-container {
+                order: 3;
+                max-width: 100%;
+                flex: 1 1 100%;
+            }
+
+            .header-actions {
+                flex-wrap: wrap;
+            }
+
+            .main-content {
+                padding: 30px 20px;
+            }
+
+            .requests-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .tabs-container {
+                overflow-x: auto;
+            }
+
+            .tab {
+                padding: 12px 20px;
+                font-size: 14px;
+            }
+
+            .request-card-header {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+
+            .status-badge {
+                align-self: flex-start;
+            }
+
+            .logo {
+                font-size: 24px;
+            }
+
+            .logo svg {
+                width: 24px;
+                height: 24px;
+            }
+
+            .page-title {
+                font-size: 28px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="header">
+        <div class="header-content">
+            <a href="gallery.html" class="logo">
+                <svg width="28" height="28" viewBox="0 0 32 32" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M16 2C16 2 8 10 8 18C8 22.4183 11.5817 26 16 26C20.4183 26 24 22.4183 24 18C24 10 16 2 16 2Z" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+                    <path d="M16 12V26" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                    <path d="M12 16C12 16 14 18 16 18C18 18 20 16 20 16" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
+                </svg>
+                <span>Folium</span>
+            </a>
+
+            <div class="search-container">
+                <input type="text" placeholder="Buscar solicitudes recibidas..." id="searchInput">
+                <i class="fas fa-search"></i>
+            </div>
+
+            <div class="header-actions">
+                <a href="gallery.html" class="header-btn">
+                    <i class="fas fa-th-large"></i>
+                    <span>Galería</span>
+                </a>
+                <a href="profile.html" class="header-btn">
+                    <i class="fas fa-user"></i>
+                    <span>Mi Perfil</span>
+                </a>
+                <a href="requests.html" class="header-btn">
+                    <i class="fas fa-handshake"></i>
+                    <span>Solicitudes</span>
+                </a>
+                <button class="header-btn logout" id="logoutBtn">
+                    <i class="fas fa-sign-out-alt"></i>
+                    <span>Salir</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <main class="main-content">
+        <div class="page-header">
+            <h1 class="page-title">
+                <i class="fas fa-handshake"></i>
+                Mis Solicitudes de Adopción
+            </h1>
+            <p class="page-subtitle">Gestiona las solicitudes que recibes y las que has enviado</p>
+        </div>
+
+        <div class="tabs-container">
+            <button class="tab active" data-type="received" id="receivedTab">
+                <i class="fas fa-inbox"></i>
+                Solicitudes Recibidas
+                <span class="tab-badge" id="receivedBadge">...</span>
+            </button>
+            <button class="tab" data-type="sent" id="sentTab">
+                <i class="fas fa-paper-plane"></i>
+                Solicitudes Enviadas
+                <span class="tab-badge" id="sentBadge">...</span>
+            </button>
+        </div>
+
+        <div id="requestsGrid" class="requests-grid">
+            <div class="loading">
+                <div><i class="fas fa-spinner"></i></div>
+                <div>Cargando solicitudes...</div>
+            </div>
+        </div>
+    </main>
+
+   <script>
+    const API_BASE_URL = 'https://raiden-eruptible-ruthie.ngrok-free.dev';
+    const IMAGE_BASE_URL = 'https://raiden-eruptible-ruthie.ngrok-free.dev/'; 
+    
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+        window.location.href = '../index.html';
+    }
+
+    axios.defaults.baseURL = API_BASE_URL;
+    axios.defaults.headers.common['Authorization'] = `Bearer ${token}`;
+
+    let currentType = 'received';
+    let receivedRequests = [];
+    let sentRequests = [];
+    let currentRequests = []; 
+    let searchTerm = '';
+
+    const requestsGrid = document.getElementById('requestsGrid');
+    const receivedTab = document.getElementById('receivedTab');
+    const sentTab = document.getElementById('sentTab');
+    const receivedBadge = document.getElementById('receivedBadge');
+    const sentBadge = document.getElementById('sentBadge');
+    const searchInput = document.getElementById('searchInput');
+    const logoutBtn = document.getElementById('logoutBtn');
+
+    logoutBtn.addEventListener('click', () => {
+        localStorage.removeItem('token');
+        window.location.href = '../index.html';
+    });
+
+    receivedTab.addEventListener('click', () => {
+        switchTab('received');
+    });
+
+    sentTab.addEventListener('click', () => {
+        switchTab('sent');
+    });
+
+    function switchTab(type) {
+        currentType = type;
+        
+        if (type === 'received') {
+            receivedTab.classList.add('active');
+            sentTab.classList.remove('active');
+            currentRequests = receivedRequests;
+            searchInput.placeholder = 'Buscar solicitudes recibidas...';
+        } else {
+            sentTab.classList.add('active');
+            receivedTab.classList.remove('active');
+            currentRequests = sentRequests;
+            searchInput.placeholder = 'Buscar solicitudes enviadas...';
+        }
+
+        searchTerm = searchInput.value.trim().toLowerCase();
+        renderRequests(filterRequests(currentRequests));
+    }
+
+    searchInput.addEventListener('input', (e) => {
+        searchTerm = e.target.value.trim().toLowerCase();
+        renderRequests(filterRequests(currentRequests));
+    });
+
+    function filterRequests(requests) {
+        if (!searchTerm) return requests;
+        
+        return requests.filter(request => {
+            const plantName = request.Plant?.name?.toLowerCase() || '';
+            
+            const userName = currentType === 'received' 
+                ? (request.Requester?.name?.toLowerCase() || '')
+                : (request.Plant?.Donator?.name?.toLowerCase() || '');
+            
+            return plantName.includes(searchTerm) || userName.includes(searchTerm);
+        });
+    }
+
+    async function initialLoad() {
+        try {
+            requestsGrid.innerHTML = `
+                <div class="loading">
+                    <div><i class="fas fa-spinner"></i></div>
+                    <div>Cargando todas las solicitudes...</div>
+                </div>
+            `;
+            receivedBadge.textContent = '...';
+            sentBadge.textContent = '...';
+
+            const [receivedRes, sentRes] = await Promise.all([
+                axios.get('/requests/incoming'), 
+                axios.get('/requests/outgoing') 
+            ]);
+
+            receivedRequests = receivedRes.data;
+            sentRequests = sentRes.data;
+
+            updateBadges(receivedRequests.length, sentRequests.length);
+            
+            currentRequests = currentType === 'received' ? receivedRequests : sentRequests;
+            renderRequests(filterRequests(currentRequests));
+
+        } catch (error) {
+            console.error('Error al cargar solicitudes:', error);
+            
+            const status = error.response?.status;
+            let errorMsg = 'No se pudieron cargar las solicitudes. Verifica tu API y conexión.';
+
+            if (status === 404) {
+                errorMsg = `Verifica que las rutas '/requests/incoming' y '/requests/outgoing' estén correctamente implementadas en tu backend.`;
+            } else if (status === 401 || status === 403) {
+                errorMsg = 'No tienes permiso para ver esta información. ¿Tu sesión expiró?';
+            }
+
+            requestsGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-exclamation-circle"></i>
+                    <h3>Error de conexión</h3>
+                    <p>${errorMsg}</p>
+                </div>
+            `;
+            receivedBadge.textContent = '0';
+            sentBadge.textContent = '0';
+        }
+    }
+
+    function updateBadges(receivedCount, sentCount) {
+        receivedBadge.textContent = receivedCount;
+        sentBadge.textContent = sentCount;
+    }
+
+    function renderRequests(requests) {
+        if (!requests || requests.length === 0) {
+            const message = currentType === 'received' 
+                ? 'No has recibido solicitudes aún.'
+                : 'No has enviado solicitudes aún.';
+            
+            requestsGrid.innerHTML = `
+                <div class="empty-state">
+                    <i class="fas fa-inbox"></i>
+                    <h3>Sin solicitudes</h3>
+                    <p>${message}</p>
+                </div>
+            `;
+            return;
+        }
+
+        requestsGrid.innerHTML = requests.map(request => {
+            const plant = request.Plant || {};
+            const requester = request.Requester || {};
+            const donator = plant.Donator || {};
+            
+            const status = (request.status || 'PENDING').toUpperCase();
+            const statusClass = status.toLowerCase();
+            const statusText = {
+                'PENDING': 'Pendiente',
+                'ACCEPTED': 'Aceptada',
+                'REJECTED': 'Rechazada'
+            }[status] || 'Desconocido';
+
+            let plantImage;
+            if (plant.image_url && plant.image_url.trim() !== 'null' && plant.image_url.trim() !== '') {
+                plantImage = plant.image_url.startsWith('http') 
+                    ? plant.image_url.trim() 
+                    : IMAGE_BASE_URL + plant.image_url.trim();
+            } else {
+                plantImage = 'https://via.placeholder.com/60/2d6a4f/ffffff?text=P'; 
+            }
+            
+            const plantName = plant.name || 'Planta sin nombre';
+            const plantType = plant.type || 'Sin categoría';
+            
+            const userName = currentType === 'received' 
+                ? (requester.name || 'Usuario desconocido')
+                : (donator.name || 'Usuario desconocido');
+            
+            const userLabel = currentType === 'received' ? 'Solicitante' : 'Donador';
+            
+            const requestDate = request.createdAt 
+                ? new Date(request.createdAt).toLocaleDateString('es-ES', {
+                    year: 'numeric',
+                    month: 'long',
+                    day: 'numeric'
+                })
+                : 'Fecha desconocida';
+
+            let actionButtons = '';
+            
+            if (currentType === 'received' && status === 'PENDING') {
+                actionButtons = `
+                    <div class="request-actions" id="actions-${request.id}">
+                        <button class="btn btn-reject" onclick="handleRequestAction(${request.id}, 'REJECTED')">
+                            <i class="fas fa-times"></i>
+                            Rechazar
+                        </button>
+                        <button class="btn btn-accept" onclick="handleRequestAction(${request.id}, 'ACCEPTED')">
+                            <i class="fas fa-check"></i>
+                            Aceptar
+                        </button>
+                    </div>
+                `;
+            } else if (status === 'ACCEPTED') {
+                actionButtons = `
+                    <div class="request-actions" id="actions-${request.id}">
+                        <button class="btn btn-chat" onclick="openChat(${request.id})">
+                            <i class="fas fa-comments"></i>
+                            ${currentType === 'received' ? 'Iniciar Chat' : 'Abrir Chat'}
+                        </button>
+                    </div>
+                `;
+            }
+
+            return `
+                <div class="request-card" data-request-id="${request.id}">
+                    <div class="request-card-header">
+                        <div class="request-card-plant">
+                            <img src="${plantImage}" alt="${plantName}" class="plant-image-small">
+                            <div class="plant-info">
+                                <div class="plant-name">${plantName}</div>
+                                <div class="plant-type">
+                                    <i class="fas fa-tag"></i>
+                                    ${plantType}
+                                </div>
+                            </div>
+                        </div>
+                        <span class="status-badge ${statusClass}" id="status-${request.id}">${statusText}</span>
+                    </div>
+                    
+                    <div class="request-card-body">
+                        <div class="request-info">
+                            <i class="fas fa-user"></i>
+                            <div class="request-info-text">
+                                <div class="request-info-label">${userLabel}</div>
+                                <div class="request-info-value">${userName}</div>
+                            </div>
+                        </div>
+                        
+                        <div class="request-date">
+                            <i class="fas fa-calendar-alt"></i>
+                            Solicitado el ${requestDate}
+                        </div>
+
+                        ${actionButtons}
+                    </div>
+                </div>
+            `;
+        }).join('');
+    }
+
+    async function handleRequestAction(requestId, newStatus) {
+        const actionText = newStatus === 'ACCEPTED' ? 'aceptar' : 'rechazar';
+        const confirmMessage = `¿Estás seguro de que deseas ${actionText} esta solicitud?`;
+        
+        if (!confirm(confirmMessage)) {
+            return;
+        }
+
+        try {
+            const targetActionsDiv = document.getElementById(`actions-${requestId}`);
+            if (targetActionsDiv) {
+                targetActionsDiv.innerHTML = '<div class="loading" style="padding: 10px;"><i class="fas fa-spinner" style="font-size: 20px;"></i></div>';
+            }
+
+            const endpoint = newStatus === 'ACCEPTED' 
+                ? `/requests/${requestId}/accept` 
+                : `/requests/${requestId}/reject`;
+
+            await axios.put(endpoint, {});
+
+            const successText = newStatus === 'ACCEPTED' 
+                ? '¡Solicitud aceptada! Ahora puedes iniciar el chat con el solicitante.'
+                : 'Solicitud rechazada.';
+            
+            alert(successText);
+
+            if (newStatus === 'ACCEPTED') {
+                const statusBadge = document.getElementById(`status-${requestId}`);
+                if (statusBadge) {
+                    statusBadge.textContent = 'Aceptada';
+                    statusBadge.className = 'status-badge accepted';
+                }
+
+                if (targetActionsDiv) {
+                    targetActionsDiv.innerHTML = `
+                        <button class="btn btn-chat" onclick="openChat(${requestId})">
+                            <i class="fas fa-comments"></i>
+                            Iniciar Chat
+                        </button>
+                    `;
+                }
+            }
+            
+            setTimeout(initialLoad, 500);
+
+        } catch (error) {
+            console.error('Error al actualizar solicitud:', error);
+            
+            const errorMsg = error.response?.data?.message 
+                || 'Error al actualizar la solicitud. Por favor intenta de nuevo.';
+            
+            alert(errorMsg);
+            
+            await initialLoad();
+        }
+    }
+
+    function openChat(requestId) {
+        window.location.href = `chat.html?requestId=${requestId}`;
+    }
+
+    window.handleRequestAction = handleRequestAction;
+    window.openChat = openChat;
+
+    initialLoad();
+</script>
+</body>
+</html>
